@@ -38,9 +38,8 @@ export function LiveIndicator({
   animated = true,
 }: LiveIndicatorProps) {
   return (
-    <span
+    <output
       className={`live-indicator live-indicator--${size} ${className}`}
-      role="status"
       aria-live="polite"
       aria-label={minute ? `Live match, minute ${minute}` : 'Live match'}
     >
@@ -128,7 +127,7 @@ export function LiveIndicator({
           line-height: 1;
         }
       `}</style>
-    </span>
+    </output>
   );
 }
 
@@ -145,9 +144,8 @@ export function LiveDot({
   className?: string;
 }) {
   return (
-    <span
+    <output
       className={`live-dot live-dot--${size} ${className}`}
-      role="status"
       aria-label="Live"
     >
       <span className={`live-dot__indicator ${animated ? 'live-dot__indicator--animated' : ''}`} />
@@ -196,7 +194,7 @@ export function LiveDot({
           }
         }
       `}</style>
-    </span>
+    </output>
   );
 }
 
@@ -211,7 +209,7 @@ export function LiveBadge({
   className?: string;
 }) {
   return (
-    <div className={`live-badge ${className}`} role="status" aria-live="polite">
+    <output className={`live-badge ${className}`} aria-live="polite">
       <LiveIndicator showText={true} minute={minute} size="small" animated={true} />
 
       <style jsx>{`
@@ -219,6 +217,6 @@ export function LiveBadge({
           display: inline-block;
         }
       `}</style>
-    </div>
+    </output>
   );
 }
