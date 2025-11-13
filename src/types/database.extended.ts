@@ -657,6 +657,41 @@ export interface Database {
           updated_at?: string
         }
       }
+      api_football_cache: {
+        Row: {
+          id: number
+          endpoint: string
+          params_hash: string
+          response_data: Json
+          cached_at: string
+          expires_at: string
+          hit_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          endpoint: string
+          params_hash: string
+          response_data: Json
+          cached_at?: string
+          expires_at: string
+          hit_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          endpoint?: string
+          params_hash?: string
+          response_data?: Json
+          cached_at?: string
+          expires_at?: string
+          hit_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -665,6 +700,20 @@ export interface Database {
       clean_expired_cache: {
         Args: Record<string, never>
         Returns: void
+      }
+      cleanup_expired_cache: {
+        Args: Record<string, never>
+        Returns: number
+      }
+      get_cache_stats: {
+        Args: Record<string, never>
+        Returns: {
+          total_entries: number
+          valid_entries: number
+          expired_entries: number
+          total_hits: number
+          cache_size_mb: number
+        }[]
       }
     }
     Enums: {
