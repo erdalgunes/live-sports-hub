@@ -9,8 +9,6 @@ export const ENDPOINTS = {
     BY_LEAGUE_LIVE: (leagueId: number) => `/fixtures?live=all&league=${leagueId}`,
   },
   LEAGUES: '/leagues',
-  STANDINGS: (leagueId: number, season: number) =>
-    `/standings?league=${leagueId}&season=${season}`,
-  STATISTICS: (fixtureId: number) =>
-    `/fixtures/statistics?fixture=${fixtureId}`,
+  STANDINGS: (leagueId: number, season: number) => `/standings?league=${leagueId}&season=${season}`,
+  STATISTICS: (fixtureId: number) => `/fixtures/statistics?fixture=${fixtureId}`,
 } as const

@@ -22,13 +22,9 @@ export function MatchList({ fixtures, isLoading }: MatchListProps) {
 
   if (fixtures.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-lg font-medium text-muted-foreground">
-          No matches found
-        </p>
-        <p className="text-sm text-muted-foreground mt-2">
-          Check back later for live scores
-        </p>
+      <div className="py-12 text-center">
+        <p className="text-muted-foreground text-lg font-medium">No matches found</p>
+        <p className="text-muted-foreground mt-2 text-sm">Check back later for live scores</p>
       </div>
     )
   }
@@ -39,13 +35,8 @@ export function MatchList({ fixtures, isLoading }: MatchListProps) {
   return (
     <Card className="overflow-hidden">
       {leagueInfo && (
-        <div className="flex items-center gap-3 px-6 py-4 border-b bg-muted/30">
-          <Image
-            src={leagueInfo.logo}
-            alt={leagueInfo.name}
-            width={24}
-            height={24}
-          />
+        <div className="bg-muted/30 flex items-center gap-3 border-b px-6 py-4">
+          <Image src={leagueInfo.logo} alt={leagueInfo.name} width={24} height={24} />
           <span className="font-medium">{leagueInfo.name}</span>
         </div>
       )}

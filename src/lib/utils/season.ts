@@ -29,11 +29,5 @@ export function getCurrentSeason(date: Date = new Date()): number {
  */
 export function getAvailableSeasons(date: Date = new Date()): number[] {
   const currentSeason = getCurrentSeason(date)
-  return [
-    currentSeason,
-    currentSeason - 1,
-    currentSeason - 2,
-    currentSeason - 3,
-    currentSeason - 4,
-  ]
+  return [currentSeason, currentSeason - 1, currentSeason - 2, currentSeason - 3, currentSeason - 4]
 }

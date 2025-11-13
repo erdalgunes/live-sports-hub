@@ -1,13 +1,7 @@
 // Supabase database types
 // Generated from schema in supabase/migrations/001_initial_schema.sql
 
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export interface Database {
   public: {

@@ -21,9 +21,7 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
   const searchParams = useSearchParams()
 
   const dateParam = searchParams.get('date')
-  const [date, setDate] = useState<Date | undefined>(
-    dateParam ? new Date(dateParam) : defaultDate
-  )
+  const [date, setDate] = useState<Date | undefined>(dateParam ? new Date(dateParam) : defaultDate)
   const [matchDays, setMatchDays] = useState<Date[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [currentMonth, setCurrentMonth] = useState<Date>(date || defaultDate)
@@ -81,12 +79,17 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
             'w-[240px] justify-start text-left font-normal',
             !date && 'text-muted-foreground'
           )}
+          aria-label={
+            date ? `Change date. Currently selected: ${format(date, 'PPPP')}` : 'Choose date'
+          }
+          aria-haspopup="dialog"
+          aria-expanded={isOpen}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+          <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
           {date ? format(date, 'PPP') : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0" align="start" role="dialog" aria-label="Choose date">
         <style jsx global>{`
           /* Days with matches styling */
           .rdp-day_button.has-matches {
@@ -116,7 +119,7 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
           }
 
           /* Selected day with matches */
-          .rdp-day_button.has-matches[aria-selected="true"]::after {
+          .rdp-day_button.has-matches[aria-selected='true']::after {
             background-color: hsl(var(--primary-foreground));
           }
 
@@ -125,20 +128,41 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
             background-color: hsl(var(--primary));
           }
         `}</style>
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={handleDateSelect}
-          onMonthChange={setCurrentMonth}
-          month={currentMonth}
-          modifiers={{
-            hasMatches: matchDays
-          }}
-          modifiersClassNames={{
-            hasMatches: 'has-matches'
-          }}
-          initialFocus
-        />
+        <div>
+          <div className="sr-only" role="status" aria-live="polite">
+            Use arrow keys to navigate dates. Press Enter to select. Days with matches are
+            indicated.
+          </div>
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={handleDateSelect}
+            onMonthChange={setCurrentMonth}
+            month={currentMonth}
+            modifiers={{
+              hasMatches: matchDays,
+            }}
+            modifiersClassNames={{
+              hasMatches: 'has-matches',
+            }}
+            labels={{
+              labelPrevious: (month) => `Go to previous month`,
+              labelNext: (month) => `Go to next month`,
+            }}
+            initialFocus
+          />
+          {matchDays.length > 0 && (
+            <div className="px-3 pt-0 pb-3">
+              <p className="text-muted-foreground text-xs">
+                <span
+                  className="bg-primary mr-1.5 inline-block h-2 w-2 rounded-full align-middle"
+                  aria-hidden="true"
+                ></span>
+                Days with scheduled matches
+              </p>
+            </div>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   )

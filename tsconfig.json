@@ -20,7 +20,13 @@
     ],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    // Additional strict options for better type safety
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "pretty": true
   },
   "include": [
     "next-env.d.ts",

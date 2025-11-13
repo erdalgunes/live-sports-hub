@@ -34,17 +34,12 @@ export function DateQuickNav({ currentDate }: DateQuickNavProps) {
         onClick={() => handleDateChange(yesterday)}
         className="h-9"
       >
-        <ChevronLeft className="h-4 w-4 mr-1" />
+        <ChevronLeft className="mr-1 h-4 w-4" />
         {format(yesterday, 'MMM d')}
       </Button>
 
       {!isToday && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleDateChange(today)}
-          className="h-9"
-        >
+        <Button variant="outline" size="sm" onClick={() => handleDateChange(today)} className="h-9">
           Today
         </Button>
       )}
@@ -56,7 +51,7 @@ export function DateQuickNav({ currentDate }: DateQuickNavProps) {
         className="h-9"
       >
         {format(tomorrow, 'MMM d')}
-        <ChevronRight className="h-4 w-4 ml-1" />
+        <ChevronRight className="ml-1 h-4 w-4" />
       </Button>
     </div>
   )

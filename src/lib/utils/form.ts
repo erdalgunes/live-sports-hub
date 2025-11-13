@@ -3,17 +3,16 @@
  * The API provides overall form, but we can approximate home/away form
  * by looking at the win/draw/loss pattern in home or away stats
  */
-export function calculateFormFromStats(
-  stats: { win: number; draw: number; lose: number; played: number }
-): string {
+export function calculateFormFromStats(stats: {
+  win: number
+  draw: number
+  lose: number
+  played: number
+}): string {
   // This is an approximation - we create a form string based on the ratio
   // In reality, we'd need fixture-by-fixture data
   const total = stats.played
   if (total === 0) return ''
-
-  const winRatio = stats.win / total
-  const drawRatio = stats.draw / total
-  const loseRatio = stats.lose / total
 
   // Generate a form string weighted by the ratios
   let form = ''

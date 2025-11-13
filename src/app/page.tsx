@@ -2,12 +2,13 @@ import { getLiveFixtures } from '@/lib/api/api-football'
 import { MatchList } from '@/components/matches/match-list'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { Fixture } from '@/types/api-football'
 
 export const revalidate = 60 // ISR: revalidate every 60 seconds
 
 export default async function HomePage() {
   // Server-side initial data
-  let fixtures: any[] = []
+  let fixtures: Fixture[] = []
   let error: string | null = null
 
   try {
@@ -28,11 +29,9 @@ export default async function HomePage() {
 
       <Suspense fallback={<MatchListSkeleton />}>
         {error ? (
-          <div className="text-center py-12">
-            <p className="text-lg font-medium text-destructive">
-              Error loading live matches
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">{error}</p>
+          <div className="py-12 text-center">
+            <p className="text-destructive text-lg font-medium">Error loading live matches</p>
+            <p className="text-muted-foreground mt-2 text-sm">{error}</p>
           </div>
         ) : (
           <MatchList fixtures={fixtures} />

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStandings } from '@/lib/api/api-football'
 import { refreshTeamFixturesCache } from '@/lib/supabase/standings-cache'
+import type { Standing } from '@/types/api-football'
 
 /**
  * API route to refresh standings cache in the background
@@ -18,10 +19,7 @@ export async function POST(request: NextRequest) {
     const secret = process.env.CRON_SECRET || process.env.NEXT_PUBLIC_API_SECRET
 
     if (secret && authHeader !== `Bearer ${secret}`) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get league and season from request body
@@ -36,14 +34,11 @@ export async function POST(request: NextRequest) {
     const standings = standingsData.response[0]?.league?.standings?.[0] || []
 
     if (standings.length === 0) {
-      return NextResponse.json(
-        { error: 'No standings found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'No standings found' }, { status: 404 })
     }
 
     // Extract team IDs
-    const teamIds = standings.map((team: any) => team.team.id)
+    const teamIds = standings.map((team: Standing) => team.team.id)
 
     console.log(`[Cache Refresh] Found ${teamIds.length} teams to refresh`)
 
@@ -66,7 +61,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to refresh cache',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     )

@@ -19,41 +19,61 @@ export function Header() {
   ]
 
   return (
-    <header className="border-b">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold hover:text-primary transition-colors">
-            {APP_CONFIG.NAME} ⚽
-          </Link>
+    <>
+      {/* Skip to main content link for keyboard users */}
+      <a
+        href="#main-content"
+        className="sr-only-focusable bg-primary text-primary-foreground sr-only fixed top-4 left-4 z-50 rounded-md px-4 py-2"
+      >
+        Skip to main content
+      </a>
 
-          <nav className="flex items-center gap-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'text-sm font-medium transition-colors hover:text-primary',
-                  pathname === item.href
-                    ? 'text-foreground'
-                    : 'text-muted-foreground'
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              aria-label="Toggle theme"
+      <header className="border-b" role="banner">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link
+              href="/"
+              className="hover:text-primary text-xl font-bold transition-colors"
+              aria-label={`${APP_CONFIG.NAME} - Home`}
             >
-              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            </Button>
-          </nav>
+              {APP_CONFIG.NAME} ⚽
+            </Link>
+
+            <nav className="flex items-center gap-6" aria-label="Main navigation">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'hover:text-primary text-sm font-medium transition-colors',
+                    pathname === item.href ? 'text-foreground' : 'text-muted-foreground'
+                  )}
+                  aria-current={pathname === item.href ? 'page' : undefined}
+                >
+                  {item.label}
+                </Link>
+              ))}
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                aria-label="Toggle theme"
+              >
+                <Sun
+                  className="h-5 w-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
+                  aria-hidden="true"
+                />
+                <Moon
+                  className="absolute h-5 w-5 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">Toggle between light and dark mode</span>
+              </Button>
+            </nav>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   )
 }

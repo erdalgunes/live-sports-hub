@@ -1,13 +1,9 @@
 'use client'
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-interface ViewTabsProps {
-  defaultValue: string
-}
-
-export function ViewTabs({ defaultValue }: ViewTabsProps) {
+export function ViewTabs() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -19,17 +15,11 @@ export function ViewTabs({ defaultValue }: ViewTabsProps) {
   }
 
   return (
-    <TabsList className="grid w-full grid-cols-2 mb-6">
-      <TabsTrigger
-        value="date"
-        onClick={() => handleViewChange('date')}
-      >
+    <TabsList className="mb-6 grid w-full grid-cols-2">
+      <TabsTrigger value="date" onClick={() => handleViewChange('date')}>
         By Date
       </TabsTrigger>
-      <TabsTrigger
-        value="round"
-        onClick={() => handleViewChange('round')}
-      >
+      <TabsTrigger value="round" onClick={() => handleViewChange('round')}>
         By Round
       </TabsTrigger>
     </TabsList>

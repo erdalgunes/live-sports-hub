@@ -9,6 +9,7 @@ import { ViewTabs } from '@/components/view-tabs'
 import { DatePicker } from '@/components/date-picker'
 import { DateQuickNav } from '@/components/date-quick-nav'
 import { getCurrentSeason } from '@/lib/utils/season'
+import type { Fixture } from '@/types/api-football'
 
 export const revalidate = 3600 // ISR: 1 hour
 
@@ -28,8 +29,8 @@ export default async function FixturesPage({ searchParams }: FixturesPageProps) 
   const selectedDateFormatted = format(selectedDate, DATE_FORMATS.API)
 
   // Fetch fixtures based on view type
-  let fixturesData: any[] = []
-  let roundFixturesData: any[] = []
+  let fixturesData: Fixture[] = []
+  let roundFixturesData: Fixture[] = []
   let error: string | null = null
 
   if (view === 'date') {
@@ -63,20 +64,18 @@ export default async function FixturesPage({ searchParams }: FixturesPageProps) 
       </div>
 
       <Tabs defaultValue={view} className="w-full">
-        <ViewTabs defaultValue={view} />
+        <ViewTabs />
 
         <TabsContent value="date" className="space-y-4">
-          <div className="flex flex-col items-center gap-4 mb-6">
+          <div className="mb-6 flex flex-col items-center gap-4">
             <DatePicker defaultDate={selectedDate} season={season} />
             <DateQuickNav currentDate={selectedDate} />
           </div>
 
           {error ? (
-            <div className="text-center py-12">
-              <p className="text-lg font-medium text-destructive">
-                Error loading fixtures
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">{error}</p>
+            <div className="py-12 text-center">
+              <p className="text-destructive text-lg font-medium">Error loading fixtures</p>
+              <p className="text-muted-foreground mt-2 text-sm">{error}</p>
             </div>
           ) : (
             <MatchList fixtures={fixturesData} />
@@ -89,11 +88,9 @@ export default async function FixturesPage({ searchParams }: FixturesPageProps) 
           </div>
 
           {error ? (
-            <div className="text-center py-12">
-              <p className="text-lg font-medium text-destructive">
-                Error loading fixtures
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">{error}</p>
+            <div className="py-12 text-center">
+              <p className="text-destructive text-lg font-medium">Error loading fixtures</p>
+              <p className="text-muted-foreground mt-2 text-sm">{error}</p>
             </div>
           ) : (
             <MatchList fixtures={roundFixturesData} />
