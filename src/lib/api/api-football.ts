@@ -71,10 +71,23 @@ export const getLiveFixtures = cache(async (leagueId?: number): Promise<APIRespo
   })
 })
 
-export const getFixturesByDate = cache(async (date: string, leagueId?: number): Promise<APIResponse<Fixture[]>> => {
-  const endpoint = leagueId
-    ? `/fixtures?date=${date}&league=${leagueId}`
-    : `/fixtures?date=${date}`
+export const getFixturesByDate = cache(async (date: string, leagueId?: number, season?: number): Promise<APIResponse<Fixture[]>> => {
+  let endpoint = `/fixtures?date=${date}`
+
+  if (leagueId) {
+    endpoint += `&league=${leagueId}`
+    if (season) {
+      endpoint += `&season=${season}`
+    }
+  }
+
+  return fetchAPI<Fixture[]>(endpoint, {
+    next: { revalidate: 3600 }, // ISR: 1 hour for scheduled matches
+  })
+})
+
+export const getFixturesByRound = cache(async (leagueId: number, season: number, round: string): Promise<APIResponse<Fixture[]>> => {
+  const endpoint = `/fixtures?league=${leagueId}&season=${season}&round=${encodeURIComponent(round)}`
 
   return fetchAPI<Fixture[]>(endpoint, {
     next: { revalidate: 3600 }, // ISR: 1 hour for scheduled matches
@@ -102,5 +115,16 @@ export const getStandings = cache(async (leagueId: number, season: number): Prom
 export const getFixtureStatistics = cache(async (fixtureId: number): Promise<APIResponse<any[]>> => {
   return fetchAPI(`/fixtures/statistics?fixture=${fixtureId}`, {
     next: { revalidate: 60 },
+  })
+})
+
+export const getFixturesByTeam = cache(async (
+  teamId: number,
+  season: number,
+  leagueId: number,
+  last: number = 10
+): Promise<APIResponse<any[]>> => {
+  return fetchAPI(`/fixtures?team=${teamId}&season=${season}&league=${leagueId}&last=${last}`, {
+    next: { revalidate: 3600 }, // ISR: 1 hour
   })
 })
