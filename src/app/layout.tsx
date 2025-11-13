@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { AuthProvider } from "@/components/providers/auth-provider";
 import { Header } from "@/components/layout/header";
 import { APP_CONFIG } from "@/lib/constants";
 
@@ -46,12 +47,14 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <QueryProvider>
-            <div className="min-h-screen bg-background">
-              <Header />
-              <main id="main-content" className="container mx-auto px-4 py-6">
-                {children}
-              </main>
-            </div>
+            <AuthProvider>
+              <div className="min-h-screen bg-background">
+                <Header />
+                <main id="main-content" className="container mx-auto px-4 py-6">
+                  {children}
+                </main>
+              </div>
+            </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>

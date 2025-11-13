@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { FavoriteButton } from './favorite-button'
 
 interface CompactMatchRowProps {
   fixture: any
@@ -100,9 +101,9 @@ export function CompactMatchRow({ fixture }: CompactMatchRowProps) {
       {/* Vertical separator */}
       <div className="h-9 w-px bg-border mx-3" />
 
-      {/* Favorite button placeholder */}
+      {/* Favorite button */}
       <div className="flex-shrink-0">
-        <div className="w-6 h-6" />
+        <FavoriteButton fixtureId={match.id} />
       </div>
     </div>
   )

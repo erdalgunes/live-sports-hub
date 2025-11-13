@@ -8,15 +8,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useMatchLive, useMatchEvents, useMatchStats } from '@/hooks';
-import { MatchHeader, MatchTimeline, MatchStats } from '@/components/match';
+import { useMatchLive, useMatchEvents, useMatchStats, useMatchLineups, useMatchH2H, useMatchIncidents, useMatchBestPlayers } from '@/hooks';
+import { MatchHeader, MatchTimeline, MatchStats, MatchLineups, MatchH2H, MatchIncidents, EventStandings, MatchBestPlayers, MatchGraphs } from '@/components/match';
 import type { MatchDetail } from '@/types/matches';
 
 interface MatchDetailClientProps {
   initialMatch: MatchDetail;
 }
 
-type TabType = 'overview' | 'stats' | 'lineups' | 'h2h';
+type TabType = 'overview' | 'stats' | 'lineups' | 'h2h' | 'standings' | 'incidents' | 'best-players' | 'graphs';
 
 export default function MatchDetailClient({ initialMatch }: MatchDetailClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -25,6 +25,10 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
   const { match: liveMatch, isSubscribed } = useMatchLive(initialMatch.id);
   const { events, loading: eventsLoading } = useMatchEvents(initialMatch.id);
   const { stats, loading: statsLoading } = useMatchStats(initialMatch.id);
+  const { lineups, loading: lineupsLoading } = useMatchLineups(initialMatch.id);
+  const { h2h, loading: h2hLoading } = useMatchH2H(initialMatch.id);
+  const { incidents, loading: incidentsLoading } = useMatchIncidents(initialMatch.id);
+  const { bestPlayers, loading: bestPlayersLoading } = useMatchBestPlayers(initialMatch.id);
 
   // Use live match data if available, otherwise use initial data
   const match = liveMatch || initialMatch;
@@ -34,6 +38,10 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
     { id: 'stats', label: 'Statistics' },
     { id: 'lineups', label: 'Lineups' },
     { id: 'h2h', label: 'Head to Head' },
+    { id: 'standings', label: 'Standings' },
+    { id: 'incidents', label: 'Incidents' },
+    { id: 'best-players', label: 'Best Players' },
+    { id: 'graphs', label: 'Graphs' },
   ];
 
   return (
@@ -109,7 +117,7 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
                     <div className="quick-stat">
                       <div className="quick-stat__label">Corners</div>
                       <div className="quick-stat__value">
-                        {stats.home.corner_kicks} - {stats.away.corner_kicks}
+                        {stats.home.corners} - {stats.away.corners}
                       </div>
                     </div>
                   </div>
@@ -142,33 +150,103 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
 
         {/* Lineups Tab */}
         {activeTab === 'lineups' && (
-          <div
-            role="tabpanel"
-            id="tabpanel-lineups"
-            aria-labelledby="tab-lineups"
-            className="match-detail__panel"
-          >
-            <div className="match-detail__placeholder">
-              <h3>Team Lineups</h3>
-              <p>Lineups will be displayed here once available.</p>
-            </div>
-          </div>
-        )}
+           <div
+             role="tabpanel"
+             id="tabpanel-lineups"
+             aria-labelledby="tab-lineups"
+             className="match-detail__panel"
+           >
+             {lineupsLoading ? (
+               <div className="match-detail__loading">Loading lineups...</div>
+             ) : (
+               <MatchLineups
+                 homeLineup={lineups.home}
+                 awayLineup={lineups.away}
+               />
+             )}
+           </div>
+         )}
 
         {/* H2H Tab */}
         {activeTab === 'h2h' && (
-          <div
-            role="tabpanel"
-            id="tabpanel-h2h"
-            aria-labelledby="tab-h2h"
-            className="match-detail__panel"
-          >
-            <div className="match-detail__placeholder">
-              <h3>Head to Head</h3>
-              <p>Historical matchup data will be displayed here.</p>
+           <div
+             role="tabpanel"
+             id="tabpanel-h2h"
+             aria-labelledby="tab-h2h"
+             className="match-detail__panel"
+           >
+             {h2hLoading ? (
+               <div className="match-detail__loading">Loading head-to-head data...</div>
+             ) : (
+               <MatchH2H
+                 h2h={h2h?.h2h || null}
+                 recentMatches={h2h?.recent_matches || []}
+                 homeTeam={match.home_team}
+                 awayTeam={match.away_team}
+               />
+             )}
+           </div>
+         )}
+
+        {/* Standings Tab */}
+        {activeTab === 'standings' && (
+           <div
+             role="tabpanel"
+             id="tabpanel-standings"
+             aria-labelledby="tab-standings"
+             className="match-detail__panel"
+           >
+             <EventStandings match={match} />
+           </div>
+         )}
+
+        {/* Incidents Tab */}
+        {activeTab === 'incidents' && (
+            <div
+              role="tabpanel"
+              id="tabpanel-incidents"
+              aria-labelledby="tab-incidents"
+              className="match-detail__panel"
+            >
+              {incidentsLoading ? (
+                <div className="match-detail__loading">Loading match incidents...</div>
+              ) : (
+                <MatchIncidents
+                  incidents={incidents}
+                  homeTeamId={match.home_team_id}
+                  awayTeamId={match.away_team_id}
+                />
+              )}
             </div>
-          </div>
-        )}
+          )}
+
+        {/* Best Players Tab */}
+        {activeTab === 'best-players' && (
+             <div
+               role="tabpanel"
+               id="tabpanel-best-players"
+               aria-labelledby="tab-best-players"
+               className="match-detail__panel"
+             >
+               {bestPlayersLoading ? (
+                 <div className="match-detail__loading">Loading best players...</div>
+               ) : (
+                 <MatchBestPlayers matchId={match.id} />
+               )}
+             </div>
+           )}
+
+        {/* Graphs Tab */}
+        {activeTab === 'graphs' && (
+             <div
+               role="tabpanel"
+               id="tabpanel-graphs"
+               aria-labelledby="tab-graphs"
+               className="match-detail__panel"
+             >
+               <MatchGraphs matchId={match.id} />
+             </div>
+           )}
       </div>
 
       <style jsx>{`
