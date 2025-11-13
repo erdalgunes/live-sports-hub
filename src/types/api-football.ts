@@ -149,25 +149,25 @@ export interface Standing {
 
 // Match status types
 export type MatchStatus =
-  | 'TBD'    // Time To Be Defined
-  | 'NS'     // Not Started
-  | 'LIVE'   // Live
-  | '1H'     // First Half
-  | 'HT'     // Halftime
-  | '2H'     // Second Half
-  | 'ET'     // Extra Time
-  | 'BT'     // Break Time (Extra Time)
-  | 'P'      // Penalty In Progress
-  | 'SUSP'   // Match Suspended
-  | 'INT'    // Match Interrupted
-  | 'FT'     // Finished
-  | 'AET'    // Finished After Extra Time
-  | 'PEN'    // Finished After Penalty
-  | 'PST'    // Match Postponed
-  | 'CANC'   // Match Cancelled
-  | 'ABD'    // Match Abandoned
-  | 'AWD'    // Technical Loss
-  | 'WO'     // WalkOver
+  | 'TBD' // Time To Be Defined
+  | 'NS' // Not Started
+  | 'LIVE' // Live
+  | '1H' // First Half
+  | 'HT' // Halftime
+  | '2H' // Second Half
+  | 'ET' // Extra Time
+  | 'BT' // Break Time (Extra Time)
+  | 'P' // Penalty In Progress
+  | 'SUSP' // Match Suspended
+  | 'INT' // Match Interrupted
+  | 'FT' // Finished
+  | 'AET' // Finished After Extra Time
+  | 'PEN' // Finished After Penalty
+  | 'PST' // Match Postponed
+  | 'CANC' // Match Cancelled
+  | 'ABD' // Match Abandoned
+  | 'AWD' // Technical Loss
+  | 'WO' // WalkOver
 
 // Match status labels
 export const MATCH_STATUS_LABELS: Record<MatchStatus, string> = {

@@ -10,7 +10,7 @@ interface StandingsTabsProps {
 export function StandingsTabs({ standings }: StandingsTabsProps) {
   return (
     <Tabs defaultValue="all" className="w-full">
-      <div className="flex justify-center mb-6">
+      <div className="mb-6 flex justify-center">
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="home">Home</TabsTrigger>

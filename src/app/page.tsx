@@ -28,11 +28,9 @@ export default async function HomePage() {
 
       <Suspense fallback={<MatchListSkeleton />}>
         {error ? (
-          <div className="text-center py-12">
-            <p className="text-lg font-medium text-destructive">
-              Error loading live matches
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">{error}</p>
+          <div className="py-12 text-center">
+            <p className="text-destructive text-lg font-medium">Error loading live matches</p>
+            <p className="text-muted-foreground mt-2 text-sm">{error}</p>
           </div>
         ) : (
           <MatchList fixtures={fixtures} />

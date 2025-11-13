@@ -20,7 +20,7 @@ export function LiveIndicator({ status, elapsed }: LiveIndicatorProps) {
   return (
     <Badge
       variant="destructive"
-      className="gap-1 animate-pulse"
+      className="animate-pulse gap-1"
       aria-live="assertive"
       aria-atomic="true"
       role="status"

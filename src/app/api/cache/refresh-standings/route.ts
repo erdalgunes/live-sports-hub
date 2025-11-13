@@ -18,10 +18,7 @@ export async function POST(request: NextRequest) {
     const secret = process.env.CRON_SECRET || process.env.NEXT_PUBLIC_API_SECRET
 
     if (secret && authHeader !== `Bearer ${secret}`) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get league and season from request body
@@ -36,10 +33,7 @@ export async function POST(request: NextRequest) {
     const standings = standingsData.response[0]?.league?.standings?.[0] || []
 
     if (standings.length === 0) {
-      return NextResponse.json(
-        { error: 'No standings found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'No standings found' }, { status: 404 })
     }
 
     // Extract team IDs
@@ -66,7 +60,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to refresh cache',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     )

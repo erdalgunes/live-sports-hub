@@ -1,0 +1,24 @@
+{
+  "recommendations": [
+    // Essential
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+
+    // TypeScript/JavaScript
+    "usernamehw.errorlens",
+    "yoavbls.pretty-ts-errors",
+
+    // Testing
+    "vitest.explorer",
+
+    // Git
+    "mhutchie.git-graph",
+    "eamodio.gitlens",
+
+    // Utilities
+    "christian-kohler.path-intellisense",
+    "wayou.vscode-todo-highlight",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

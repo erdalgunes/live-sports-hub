@@ -38,13 +38,13 @@ export async function getTeamFixturesFromCache(
 ): Promise<CachedFixture[] | null> {
   const supabase = await createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = (await supabase
     .from('team_fixtures_cache')
     .select('fixtures, expires_at')
     .eq('team_id', teamId)
     .eq('league_id', leagueId)
     .eq('season', season)
-    .single() as { data: { fixtures: unknown; expires_at: string } | null; error: any }
+    .single()) as { data: { fixtures: unknown; expires_at: string } | null; error: any }
 
   if (error || !data) return null
 
@@ -68,14 +68,14 @@ export async function getAllTeamFixturesFromCache(
 ): Promise<Map<number, CachedFixture[]>> {
   const supabase = await createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = (await supabase
     .from('team_fixtures_cache')
     .select('team_id, fixtures, expires_at')
     .eq('league_id', leagueId)
-    .eq('season', season) as {
-      data: Array<{ team_id: number; fixtures: unknown; expires_at: string }> | null
-      error: any
-    }
+    .eq('season', season)) as {
+    data: Array<{ team_id: number; fixtures: unknown; expires_at: string }> | null
+    error: any
+  }
 
   if (error || !data) return new Map()
 
@@ -97,19 +97,16 @@ export async function getAllTeamFixturesFromCache(
 /**
  * Check if cache is stale (needs background refresh)
  */
-export async function isCacheStale(
-  leagueId: number,
-  season: number
-): Promise<boolean> {
+export async function isCacheStale(leagueId: number, season: number): Promise<boolean> {
   const supabase = await createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = (await supabase
     .from('team_fixtures_cache')
     .select('expires_at')
     .eq('league_id', leagueId)
     .eq('season', season)
     .limit(1)
-    .single() as { data: { expires_at: string } | null; error: any }
+    .single()) as { data: { expires_at: string } | null; error: any }
 
   if (error || !data) return true // No cache = stale
 
@@ -202,6 +199,7 @@ export async function refreshTeamFixturesCache(
 
   for (let i = 0; i < teamIds.length; i++) {
     const teamId = teamIds[i]
+    if (!teamId) continue // Skip if teamId is undefined
 
     try {
       // Add delay between requests to avoid rate limiting
@@ -217,7 +215,9 @@ export async function refreshTeamFixturesCache(
         continue
       }
 
-      console.log(`[Cache Refresh] Fetching fixtures for team ${teamId} (${i + 1}/${teamIds.length})`)
+      console.log(
+        `[Cache Refresh] Fetching fixtures for team ${teamId} (${i + 1}/${teamIds.length})`
+      )
 
       // Fetch last 10 fixtures for the team
       const response = await getFixturesByTeam(teamId, season, leagueId, 10)
@@ -246,7 +246,9 @@ export async function refreshTeamFixturesCache(
 
       if (isRateLimit) {
         consecutiveRateLimitErrors++
-        console.error(`[Cache Refresh] Rate limit hit for team ${teamId}, attempt ${consecutiveRateLimitErrors}`)
+        console.error(
+          `[Cache Refresh] Rate limit hit for team ${teamId}, attempt ${consecutiveRateLimitErrors}`
+        )
 
         // Exponentially increase delay on rate limits
         delay = Math.min(10000, delay * 1.5)

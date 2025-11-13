@@ -23,7 +23,7 @@ export function Header() {
       {/* Skip to main content link for keyboard users */}
       <a
         href="#main-content"
-        className="sr-only sr-only-focusable fixed top-4 left-4 z-50 bg-primary text-primary-foreground px-4 py-2 rounded-md"
+        className="sr-only-focusable bg-primary text-primary-foreground sr-only fixed top-4 left-4 z-50 rounded-md px-4 py-2"
       >
         Skip to main content
       </a>
@@ -33,7 +33,7 @@ export function Header() {
           <div className="flex items-center justify-between">
             <Link
               href="/"
-              className="text-xl font-bold hover:text-primary transition-colors"
+              className="hover:text-primary text-xl font-bold transition-colors"
               aria-label={`${APP_CONFIG.NAME} - Home`}
             >
               {APP_CONFIG.NAME} ⚽
@@ -45,10 +45,8 @@ export function Header() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'text-sm font-medium transition-colors hover:text-primary',
-                    pathname === item.href
-                      ? 'text-foreground'
-                      : 'text-muted-foreground'
+                    'hover:text-primary text-sm font-medium transition-colors',
+                    pathname === item.href ? 'text-foreground' : 'text-muted-foreground'
                   )}
                   aria-current={pathname === item.href ? 'page' : undefined}
                 >
@@ -62,8 +60,14 @@ export function Header() {
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 aria-label="Toggle theme"
               >
-                <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" aria-hidden="true" />
-                <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" aria-hidden="true" />
+                <Sun
+                  className="h-5 w-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
+                  aria-hidden="true"
+                />
+                <Moon
+                  className="absolute h-5 w-5 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+                  aria-hidden="true"
+                />
                 <span className="sr-only">Toggle between light and dark mode</span>
               </Button>
             </nav>

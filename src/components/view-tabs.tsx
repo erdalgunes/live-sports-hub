@@ -19,17 +19,11 @@ export function ViewTabs({ defaultValue }: ViewTabsProps) {
   }
 
   return (
-    <TabsList className="grid w-full grid-cols-2 mb-6">
-      <TabsTrigger
-        value="date"
-        onClick={() => handleViewChange('date')}
-      >
+    <TabsList className="mb-6 grid w-full grid-cols-2">
+      <TabsTrigger value="date" onClick={() => handleViewChange('date')}>
         By Date
       </TabsTrigger>
-      <TabsTrigger
-        value="round"
-        onClick={() => handleViewChange('round')}
-      >
+      <TabsTrigger value="round" onClick={() => handleViewChange('round')}>
         By Round
       </TabsTrigger>
     </TabsList>

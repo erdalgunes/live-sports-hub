@@ -86,11 +86,9 @@ export default async function StandingsPage({ searchParams }: StandingsPageProps
       </div>
 
       {error ? (
-        <div className="text-center py-12">
-          <p className="text-lg font-medium text-destructive">
-            Error loading standings
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">{error}</p>
+        <div className="py-12 text-center">
+          <p className="text-destructive text-lg font-medium">Error loading standings</p>
+          <p className="text-muted-foreground mt-2 text-sm">{error}</p>
         </div>
       ) : (
         <Card>
@@ -98,18 +96,18 @@ export default async function StandingsPage({ searchParams }: StandingsPageProps
             <StandingsTabs standings={standingsTable} />
 
             {/* Legend */}
-            <div className="mt-6 pt-4 border-t">
+            <div className="mt-6 border-t pt-4">
               <div className="flex flex-wrap gap-4 text-sm">
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                  <div className="h-4 w-4 rounded-full bg-blue-500"></div>
                   <span className="text-muted-foreground">Champions League</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-orange-500 rounded-full"></div>
+                  <div className="h-4 w-4 rounded-full bg-orange-500"></div>
                   <span className="text-muted-foreground">Europa League</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+                  <div className="h-4 w-4 rounded-full bg-red-500"></div>
                   <span className="text-muted-foreground">Relegation</span>
                 </div>
               </div>

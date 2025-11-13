@@ -27,33 +27,39 @@ Real-time soccer scores, fixtures, and league standings - POC
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/erdalgunes/live-sports-hub.git
 cd live-sports-hub
 ```
 
 2. Install dependencies:
+
 ```bash
 pnpm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env.local
 ```
 
 Edit `.env.local` with your credentials:
+
 - `NEXT_PUBLIC_API_FOOTBALL_KEY`: Your API-Football API key
 - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon key
 - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key
 
 4. Run database migrations:
+
 ```bash
 # Connect to your Supabase project and run migrations from supabase/migrations/
 ```
 
 5. Start development server:
+
 ```bash
 pnpm dev
 ```
@@ -123,32 +129,38 @@ pnpm test:ui
 ## 📋 Roadmap
 
 ### Phase 1: Foundation ✅
+
 - [x] Project setup with Next.js 15
 - [x] Tailwind CSS v4 configuration
 - [x] shadcn/ui integration
 - [x] Core dependencies installed
 
 ### Phase 2: Database & API
+
 - [ ] Supabase schema and migrations
 - [ ] API-Football client implementation
 - [ ] Type definitions for API responses
 
 ### Phase 3: Core Components
+
 - [ ] Match cards and listings
 - [ ] Live indicators
 - [ ] Loading states and skeletons
 
 ### Phase 4: Pages
+
 - [ ] Home page (live scores)
 - [ ] Fixtures page
 - [ ] Match detail page
 
 ### Phase 5: Real-time & Polish
+
 - [ ] React Query setup for polling
 - [ ] Optimizations and caching
 - [ ] Testing and documentation
 
 ### Phase 6: Deployment
+
 - [ ] Vercel deployment
 - [ ] Environment variables configuration
 - [ ] Production testing

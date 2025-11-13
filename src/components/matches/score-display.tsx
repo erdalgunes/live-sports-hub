@@ -7,12 +7,7 @@ interface ScoreDisplayProps {
   className?: string
 }
 
-export function ScoreDisplay({
-  homeScore,
-  awayScore,
-  status,
-  className
-}: ScoreDisplayProps) {
+export function ScoreDisplay({ homeScore, awayScore, status, className }: ScoreDisplayProps) {
   const showScore = homeScore !== null && awayScore !== null
 
   return (
@@ -24,13 +19,17 @@ export function ScoreDisplay({
     >
       {showScore ? (
         <>
-          <span className="sr-only">Score: {homeScore} to {awayScore}</span>
+          <span className="sr-only">
+            Score: {homeScore} to {awayScore}
+          </span>
           <span aria-hidden="true">{homeScore}</span>
-          <span className="mx-2 text-muted-foreground" aria-hidden="true">-</span>
+          <span className="text-muted-foreground mx-2" aria-hidden="true">
+            -
+          </span>
           <span aria-hidden="true">{awayScore}</span>
         </>
       ) : (
-        <span className="text-sm text-muted-foreground">{status}</span>
+        <span className="text-muted-foreground text-sm">{status}</span>
       )}
     </div>
   )
