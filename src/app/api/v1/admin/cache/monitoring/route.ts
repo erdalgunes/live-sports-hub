@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Get cache trends
-    const { data, error } = await supabase.rpc('get_cache_trends', {
+    const { data, error } = await (supabase as any).rpc('get_cache_trends', {
       hours_back: hours,
     });
 

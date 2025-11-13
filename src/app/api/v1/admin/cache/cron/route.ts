@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Get cron job status
-    const { data, error } = await supabase.rpc('get_cache_cron_status');
+    const { data, error } = await supabase.rpc('get_cache_cron_status' as any);
 
     if (error) {
       throw new Error(`Failed to get cron status: ${error.message}`);
@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
 
     return apiSuccess(
       {
-        jobs: data || [],
-        count: data?.length || 0,
+        jobs: (data as any[]) || [],
+        count: (data as any[])?.length || 0,
         timestamp: new Date().toISOString(),
       },
       {

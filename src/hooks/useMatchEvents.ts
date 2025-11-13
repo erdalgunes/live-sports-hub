@@ -13,7 +13,7 @@
 import { useEffect, useState } from 'react';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { subscribeToMatchEvents, unsubscribeChannel } from '@/lib/supabase/realtime';
-import { getMatchEvents } from '@/services/matches';
+import { getMatchEvents } from '@/services/matches.client';
 import type { MatchEventDetail } from '@/types/matches';
 import type { Database } from '@/types/database.extended';
 
