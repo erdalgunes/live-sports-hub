@@ -13,14 +13,26 @@
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 -- ============================================================================
+-- Constants: Job Names
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION get_cache_job_names()
+RETURNS TEXT[] AS $$
+BEGIN
+    RETURN ARRAY['cleanup-expired-cache', 'record-cache-snapshot', 'cleanup-old-monitoring'];
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- ============================================================================
 -- Schedule: Cache Cleanup (Every 6 Hours)
 -- ============================================================================
 
 DO $$
 DECLARE
-    v_job_cleanup_cache CONSTANT TEXT := 'cleanup-expired-cache';
-    v_job_cache_snapshot CONSTANT TEXT := 'record-cache-snapshot';
-    v_job_cleanup_monitoring CONSTANT TEXT := 'cleanup-old-monitoring';
+    v_cache_jobs CONSTANT TEXT[] := get_cache_job_names();
+    v_job_cleanup_cache CONSTANT TEXT := v_cache_jobs[1];
+    v_job_cache_snapshot CONSTANT TEXT := v_cache_jobs[2];
+    v_job_cleanup_monitoring CONSTANT TEXT := v_cache_jobs[3];
 BEGIN
     -- Unschedule if exists (for migration idempotency)
     PERFORM cron.unschedule(v_job_cleanup_cache)
@@ -90,11 +102,7 @@ SELECT
     username,
     active
 FROM cron.job
-WHERE jobname IN (
-    'cleanup-expired-cache',
-    'record-cache-snapshot',
-    'cleanup-old-monitoring'
-)
+WHERE jobname = ANY(get_cache_job_names())
 ORDER BY jobname;
 
 COMMENT ON VIEW cache_cron_jobs IS
@@ -114,7 +122,7 @@ RETURNS TABLE(
     run_count BIGINT
 ) AS $$
 DECLARE
-    v_cache_jobs CONSTANT TEXT[] := ARRAY['cleanup-expired-cache', 'record-cache-snapshot', 'cleanup-old-monitoring'];
+    v_cache_jobs CONSTANT TEXT[] := get_cache_job_names();
 BEGIN
     RETURN QUERY
     SELECT
