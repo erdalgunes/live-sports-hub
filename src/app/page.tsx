@@ -11,7 +11,8 @@ export default async function HomePage() {
   let error: string | null = null
 
   try {
-    const data = await getLiveFixtures()
+    // Fetch live fixtures for Premier League
+    const data = await getLiveFixtures(39)
     fixtures = data.response
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to load live matches'

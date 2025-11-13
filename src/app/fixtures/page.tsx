@@ -1,51 +1,76 @@
-import { getFixturesByDate } from '@/lib/api/api-football'
+import { getFixturesByDate, getFixturesByRound } from '@/lib/api/api-football'
 import { MatchList } from '@/components/matches/match-list'
-import { format, addDays, subDays } from 'date-fns'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { format } from 'date-fns'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { DATE_FORMATS } from '@/lib/constants'
+import { SeasonSelector } from '@/components/season-selector'
+import { RoundSelector } from '@/components/round-selector'
+import { ViewTabs } from '@/components/view-tabs'
+import { DatePicker } from '@/components/date-picker'
+import { DateQuickNav } from '@/components/date-quick-nav'
+import { getCurrentSeason } from '@/lib/utils/season'
 
 export const revalidate = 3600 // ISR: 1 hour
 
-export default async function FixturesPage() {
-  const today = new Date()
-  const yesterday = subDays(today, 1)
-  const tomorrow = addDays(today, 1)
+interface FixturesPageProps {
+  searchParams: Promise<{ season?: string; view?: string; round?: string; date?: string }>
+}
 
-  const dates = [
-    { label: 'Yesterday', value: format(yesterday, DATE_FORMATS.API) },
-    { label: 'Today', value: format(today, DATE_FORMATS.API) },
-    { label: 'Tomorrow', value: format(tomorrow, DATE_FORMATS.API) },
-  ]
+export default async function FixturesPage({ searchParams }: FixturesPageProps) {
+  const resolvedParams = await searchParams
+  const season = parseInt(resolvedParams.season || String(getCurrentSeason()))
+  const view = resolvedParams.view || 'date'
+  const round = parseInt(resolvedParams.round || '11')
+  const dateParam = resolvedParams.date
 
-  // Fetch today's fixtures by default
+  // Use actual current dates for live data, or selected date from picker
+  const selectedDate = dateParam ? new Date(dateParam) : new Date()
+  const selectedDateFormatted = format(selectedDate, DATE_FORMATS.API)
+
+  // Fetch fixtures based on view type
   let fixturesData: any[] = []
+  let roundFixturesData: any[] = []
   let error: string | null = null
 
-  try {
-    const data = await getFixturesByDate(dates[1].value)
-    fixturesData = data.response
-  } catch (e) {
-    error = e instanceof Error ? e.message : 'Failed to load fixtures'
-    console.error('Error fetching fixtures:', e)
+  if (view === 'date') {
+    try {
+      const data = await getFixturesByDate(selectedDateFormatted, 39, season) // Premier League only
+      fixturesData = data.response
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Failed to load fixtures'
+      console.error('Error fetching fixtures:', e)
+    }
+  } else if (view === 'round') {
+    try {
+      const data = await getFixturesByRound(39, season, `Regular Season - ${round}`) // Premier League only
+      roundFixturesData = data.response
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Failed to load fixtures'
+      console.error('Error fetching fixtures:', e)
+    }
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Fixtures & Schedules</h1>
-        <p className="text-muted-foreground">Browse matches by date</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Fixtures & Schedules</h1>
+          <p className="text-muted-foreground">
+            Browse {season}/{season + 1} matches
+          </p>
+        </div>
+        <SeasonSelector defaultSeason={season} />
       </div>
 
-      <Tabs defaultValue={dates[1].value} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          {dates.map((date) => (
-            <TabsTrigger key={date.value} value={date.value}>
-              {date.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <Tabs defaultValue={view} className="w-full">
+        <ViewTabs defaultValue={view} />
 
-        <TabsContent value={dates[1].value} className="mt-6">
+        <TabsContent value="date" className="space-y-4">
+          <div className="flex flex-col items-center gap-4 mb-6">
+            <DatePicker defaultDate={selectedDate} season={season} />
+            <DateQuickNav currentDate={selectedDate} />
+          </div>
+
           {error ? (
             <div className="text-center py-12">
               <p className="text-lg font-medium text-destructive">
@@ -58,16 +83,22 @@ export default async function FixturesPage() {
           )}
         </TabsContent>
 
-        {/* Note: Other tabs would need client-side data fetching */}
-        {dates.slice(0, 1).concat(dates.slice(2)).map((date) => (
-          <TabsContent key={date.value} value={date.value} className="mt-6">
+        <TabsContent value="round" className="space-y-4">
+          <div className="flex justify-center">
+            <RoundSelector defaultRound={round} />
+          </div>
+
+          {error ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                Switch to this tab to load {date.label.toLowerCase()}'s matches
+              <p className="text-lg font-medium text-destructive">
+                Error loading fixtures
               </p>
+              <p className="text-sm text-muted-foreground mt-2">{error}</p>
             </div>
-          </TabsContent>
-        ))}
+          ) : (
+            <MatchList fixtures={roundFixturesData} />
+          )}
+        </TabsContent>
       </Tabs>
     </div>
   )
