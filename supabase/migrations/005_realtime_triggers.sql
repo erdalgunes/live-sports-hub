@@ -79,6 +79,8 @@ CREATE OR REPLACE FUNCTION validate_match_event()
 RETURNS TRIGGER AS $$
 DECLARE
   match_status VARCHAR(50);
+  v_status_live CONSTANT TEXT := 'live';
+  v_status_finished CONSTANT TEXT := 'finished';
 BEGIN
   -- Get current match status
   SELECT status INTO match_status
@@ -86,7 +88,7 @@ BEGIN
   WHERE id = NEW.match_id;
 
   -- Only allow events for live or finished matches
-  IF match_status NOT IN ('live', 'finished') THEN
+  IF match_status NOT IN (v_status_live, v_status_finished) THEN
     RAISE EXCEPTION 'Cannot add events to matches with status: %', match_status;
   END IF;
 

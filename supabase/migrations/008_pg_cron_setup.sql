@@ -16,55 +16,62 @@ CREATE EXTENSION IF NOT EXISTS pg_cron;
 -- Schedule: Cache Cleanup (Every 6 Hours)
 -- ============================================================================
 
--- Unschedule if exists (for migration idempotency)
-SELECT cron.unschedule('cleanup-expired-cache')
-WHERE EXISTS (
-    SELECT 1 FROM cron.job WHERE jobname = 'cleanup-expired-cache'
-);
+DO $$
+DECLARE
+    v_job_cleanup_cache CONSTANT TEXT := 'cleanup-expired-cache';
+    v_job_cache_snapshot CONSTANT TEXT := 'record-cache-snapshot';
+    v_job_cleanup_monitoring CONSTANT TEXT := 'cleanup-old-monitoring';
+BEGIN
+    -- Unschedule if exists (for migration idempotency)
+    PERFORM cron.unschedule(v_job_cleanup_cache)
+    WHERE EXISTS (
+        SELECT 1 FROM cron.job WHERE jobname = v_job_cleanup_cache
+    );
 
--- Schedule: Remove expired cache entries every 6 hours
-SELECT cron.schedule(
-    'cleanup-expired-cache',           -- Job name
-    '0 */6 * * *',                     -- Cron schedule (every 6 hours)
-    $$SELECT cleanup_expired_cache()$$ -- SQL command
-);
+    -- Schedule: Remove expired cache entries every 6 hours
+    PERFORM cron.schedule(
+        v_job_cleanup_cache,
+        '0 */6 * * *',
+        $$SELECT cleanup_expired_cache()$$
+    );
+
+    -- ============================================================================
+    -- Schedule: Cache Monitoring Snapshots (Every Hour)
+    -- ============================================================================
+
+    -- Unschedule if exists
+    PERFORM cron.unschedule(v_job_cache_snapshot)
+    WHERE EXISTS (
+        SELECT 1 FROM cron.job WHERE jobname = v_job_cache_snapshot
+    );
+
+    -- Schedule: Record cache performance snapshot every hour
+    PERFORM cron.schedule(
+        v_job_cache_snapshot,
+        '0 * * * *',
+        $$SELECT record_cache_snapshot()$$
+    );
+
+    -- ============================================================================
+    -- Schedule: Monitoring Data Cleanup (Daily at Midnight)
+    -- ============================================================================
+
+    -- Unschedule if exists
+    PERFORM cron.unschedule(v_job_cleanup_monitoring)
+    WHERE EXISTS (
+        SELECT 1 FROM cron.job WHERE jobname = v_job_cleanup_monitoring
+    );
+
+    -- Schedule: Clean up monitoring data older than 30 days (daily at midnight UTC)
+    PERFORM cron.schedule(
+        v_job_cleanup_monitoring,
+        '0 0 * * *',
+        $$SELECT cleanup_old_monitoring_data()$$
+    );
+END $$;
 
 COMMENT ON EXTENSION pg_cron IS
 'Schedules automated cache cleanup and monitoring tasks';
-
--- ============================================================================
--- Schedule: Cache Monitoring Snapshots (Every Hour)
--- ============================================================================
-
--- Unschedule if exists
-SELECT cron.unschedule('record-cache-snapshot')
-WHERE EXISTS (
-    SELECT 1 FROM cron.job WHERE jobname = 'record-cache-snapshot'
-);
-
--- Schedule: Record cache performance snapshot every hour
-SELECT cron.schedule(
-    'record-cache-snapshot',            -- Job name
-    '0 * * * *',                        -- Cron schedule (every hour)
-    $$SELECT record_cache_snapshot()$$  -- SQL command
-);
-
--- ============================================================================
--- Schedule: Monitoring Data Cleanup (Daily at Midnight)
--- ============================================================================
-
--- Unschedule if exists
-SELECT cron.unschedule('cleanup-old-monitoring')
-WHERE EXISTS (
-    SELECT 1 FROM cron.job WHERE jobname = 'cleanup-old-monitoring'
-);
-
--- Schedule: Clean up monitoring data older than 30 days (daily at midnight UTC)
-SELECT cron.schedule(
-    'cleanup-old-monitoring',                -- Job name
-    '0 0 * * *',                             -- Cron schedule (daily at midnight)
-    $$SELECT cleanup_old_monitoring_data()$$ -- SQL command
-);
 
 -- ============================================================================
 -- View Scheduled Jobs
