@@ -8,6 +8,8 @@
  * - Pre-match (>2h): 1 hour
  * - Finished matches: 24 hours
  * - Default: 1 hour
+ *
+ * @module standings-cache
  */
 
 import { createClient as createServerClient } from './server'
