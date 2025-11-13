@@ -1,9 +1,6 @@
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- User preferences table (optional auth for POC)
 CREATE TABLE user_preferences (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT UNIQUE NOT NULL,
   favorite_leagues INTEGER[] DEFAULT '{}',
   theme TEXT DEFAULT 'system',
@@ -13,7 +10,7 @@ CREATE TABLE user_preferences (
 
 -- Favorite matches table
 CREATE TABLE favorite_matches (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT NOT NULL,
   fixture_id INTEGER NOT NULL,
   league_id INTEGER,
@@ -23,7 +20,7 @@ CREATE TABLE favorite_matches (
 
 -- Cached fixtures table (reduce API calls)
 CREATE TABLE cached_fixtures (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   fixture_id INTEGER UNIQUE NOT NULL,
   fixture_data JSONB NOT NULL,
   league_id INTEGER NOT NULL,
@@ -35,7 +32,7 @@ CREATE TABLE cached_fixtures (
 
 -- Popular leagues table (curated list for POC)
 CREATE TABLE popular_leagues (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   league_id INTEGER UNIQUE NOT NULL,
   league_name TEXT NOT NULL,
   country TEXT NOT NULL,
