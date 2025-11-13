@@ -55,11 +55,11 @@ export async function GET(
       10
     );
     const upcomingLimit = Math.min(
-      Number.parseInt(searchParams.get('upcomingLimit', 10) || '10'),
+      Number.parseInt(searchParams.get('upcomingLimit') || '10'),
       20
     );
     const recentLimit = Math.min(
-      Number.parseInt(searchParams.get('recentLimit', 10) || '10'),
+      Number.parseInt(searchParams.get('recentLimit') || '10'),
       20
     );
 

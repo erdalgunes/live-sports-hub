@@ -78,8 +78,8 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
-  const leagueId = Number.parseInt(searchParams.get('leagueId', 10) || '39')
-  const season = Number.parseInt(searchParams.get('season', 10) || String(new Date().getFullYear()))
+  const leagueId = Number.parseInt(searchParams.get('leagueId') || '39')
+  const season = Number.parseInt(searchParams.get('season') || String(new Date().getFullYear()))
 
   // Forward to POST handler
   return POST(

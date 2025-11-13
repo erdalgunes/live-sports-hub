@@ -57,13 +57,13 @@ export async function GET(
       searchParams.get('season') || String(getCurrentSeason()),
       10
     );
-    const leagueId = Number.parseInt(searchParams.get('leagueId', 10) || '0');
+    const leagueId = Number.parseInt(searchParams.get('leagueId') || '0');
     const recentLimit = Math.min(
-      Number.parseInt(searchParams.get('recentLimit', 10) || '5'),
+      Number.parseInt(searchParams.get('recentLimit') || '5'),
       10
     );
     const upcomingLimit = Math.min(
-      Number.parseInt(searchParams.get('upcomingLimit', 10) || '5'),
+      Number.parseInt(searchParams.get('upcomingLimit') || '5'),
       10
     );
 
