@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: MatchDetailPageProps): Promis
   const resolvedParams = await params;
   const matchId = parseInt(resolvedParams.id, 10);
 
-  if (isNaN(matchId)) {
+  if (Number.isNaN(matchId)) {
     return { title: 'Match Not Found' };
   }
 
@@ -62,7 +62,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
   const matchId = parseInt(resolvedParams.id, 10);
 
   // Validate match ID
-  if (isNaN(matchId)) {
+  if (Number.isNaN(matchId)) {
     notFound();
   }
 

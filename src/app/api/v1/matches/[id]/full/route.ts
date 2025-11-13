@@ -13,6 +13,53 @@ import {
   getCacheHeaders,
 } from '@/lib/utils/api-response';
 
+type CacheType = 'live' | 'short' | 'medium' | 'long';
+
+/**
+ * Helper: Determine cache strategy based on match status
+ */
+function getCacheStrategy(matchStatus: string, kickoffDate: string): CacheType {
+  const LIVE_STATUSES = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE', 'BT', 'INT'];
+  const FINISHED_STATUSES = ['FT', 'AET', 'PEN'];
+
+  if (LIVE_STATUSES.includes(matchStatus)) {
+    return 'live';
+  }
+
+  if (FINISHED_STATUSES.includes(matchStatus)) {
+    return 'long';
+  }
+
+  const kickoffTime = new Date(kickoffDate).getTime();
+  const timeUntilKickoff = kickoffTime - Date.now();
+  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+
+  return timeUntilKickoff > 0 && timeUntilKickoff <= TWO_HOURS_MS ? 'short' : 'medium';
+}
+
+/**
+ * Helper: Process settled results and collect errors
+ */
+function processResults<T>(
+  result: PromiseSettledResult<T>,
+  resourceName: string
+): {
+  data: T | null;
+  error: { resource: string; message: string } | null;
+} {
+  if (result.status === 'fulfilled') {
+    return { data: result.value, error: null };
+  }
+
+  return {
+    data: null,
+    error: {
+      resource: resourceName,
+      message: `${resourceName.charAt(0).toUpperCase() + resourceName.slice(1)} temporarily unavailable`,
+    },
+  };
+}
+
 /**
  * Smart Match Aggregator
  *
@@ -46,9 +93,9 @@ export async function GET(
 ) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    const fixtureId = parseInt(id);
+    const fixtureId = Number.parseInt(id, 10);
 
-    if (isNaN(fixtureId)) {
+    if (Number.isNaN(fixtureId)) {
       throw new Error('Invalid match ID');
     }
 
@@ -69,69 +116,28 @@ export async function GET(
 
     const fixture = fixtureResult.value;
 
-    // Build response with graceful degradation
-    // Failed sub-resources return null (not omitted)
-    const errors: Array<{ resource: string; message: string }> = [];
+    // Process results and collect errors
+    const statsProcessed = processResults(statsResult, 'statistics');
+    const eventsProcessed = processResults(eventsResult, 'events');
+    const lineupsProcessed = processResults(lineupsResult, 'lineups');
 
-    const statistics =
-      statsResult.status === 'fulfilled' ? statsResult.value : null;
-    if (statsResult.status === 'rejected') {
-      errors.push({
-        resource: 'statistics',
-        message: 'Statistics temporarily unavailable',
-      });
-    }
+    const errors = [
+      statsProcessed.error,
+      eventsProcessed.error,
+      lineupsProcessed.error,
+    ].filter((e): e is { resource: string; message: string } => e !== null);
 
-    const events =
-      eventsResult.status === 'fulfilled' ? eventsResult.value : null;
-    if (eventsResult.status === 'rejected') {
-      errors.push({
-        resource: 'events',
-        message: 'Events temporarily unavailable',
-      });
-    }
-
-    const lineups =
-      lineupsResult.status === 'fulfilled' ? lineupsResult.value : null;
-    if (lineupsResult.status === 'rejected') {
-      errors.push({
-        resource: 'lineups',
-        message: 'Lineups temporarily unavailable',
-      });
-    }
-
-    // Determine cache strategy based on match status
+    // Determine cache strategy
     const matchStatus = fixture.fixture.status.short;
-    let cacheType: 'live' | 'short' | 'medium' | 'long' = 'medium';
-
-    const LIVE_STATUSES = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE', 'BT', 'INT'];
-    const FINISHED_STATUSES = ['FT', 'AET', 'PEN'];
-
-    if (LIVE_STATUSES.includes(matchStatus)) {
-      cacheType = 'live'; // 60 seconds
-    } else if (FINISHED_STATUSES.includes(matchStatus)) {
-      cacheType = 'long'; // 6 hours
-    } else {
-      // Upcoming matches
-      const kickoffTime = new Date(fixture.fixture.date).getTime();
-      const now = Date.now();
-      const timeUntilKickoff = kickoffTime - now;
-      const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
-
-      if (timeUntilKickoff > 0 && timeUntilKickoff <= TWO_HOURS_MS) {
-        cacheType = 'short'; // 5 minutes (lineups may change)
-      } else {
-        cacheType = 'medium'; // 1 hour
-      }
-    }
+    const cacheType = getCacheStrategy(matchStatus, fixture.fixture.date);
 
     // Build comprehensive response
     const response = {
       // Core data
       match: fixture,
-      statistics,
-      events,
-      lineups,
+      statistics: statsProcessed.data,
+      events: eventsProcessed.data,
+      lineups: lineupsProcessed.data,
 
       // Metadata
       meta: {
@@ -141,11 +147,11 @@ export async function GET(
         partial: errors.length > 0,
         resourcesAvailable: {
           match: true,
-          statistics: statistics !== null,
-          events: events !== null,
-          lineups: lineups !== null,
+          statistics: statsProcessed.data !== null,
+          events: eventsProcessed.data !== null,
+          lineups: lineupsProcessed.data !== null,
         },
-        successful: 1 + (statistics ? 1 : 0) + (events ? 1 : 0) + (lineups ? 1 : 0),
+        successful: 1 + [statsProcessed.data, eventsProcessed.data, lineupsProcessed.data].filter(Boolean).length,
         failed: errors.length,
       },
 

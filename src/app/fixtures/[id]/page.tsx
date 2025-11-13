@@ -18,7 +18,7 @@ interface MatchDetailPageProps {
 
 export async function generateMetadata({ params }: MatchDetailPageProps): Promise<Metadata> {
   const resolvedParams = await params
-  const fixtureId = parseInt(resolvedParams.id)
+  const fixtureId = Number.parseInt(resolvedParams.id, 10)
 
   try {
     const data = await getFixtureById(fixtureId)
@@ -37,9 +37,9 @@ export async function generateMetadata({ params }: MatchDetailPageProps): Promis
 
 export default async function MatchDetailPage({ params }: MatchDetailPageProps) {
   const resolvedParams = await params
-  const fixtureId = parseInt(resolvedParams.id)
+  const fixtureId = Number.parseInt(resolvedParams.id, 10)
 
-  if (isNaN(fixtureId)) {
+  if (Number.isNaN(fixtureId)) {
     notFound()
   }
 

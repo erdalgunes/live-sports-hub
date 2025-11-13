@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   return withErrorHandling(async () => {
     const searchParams = request.nextUrl.searchParams;
     const hoursParam = searchParams.get('hours');
-    const hours = hoursParam ? Math.min(parseInt(hoursParam), 168) : 24;
+    const hours = hoursParam ? Math.min(Number.parseInt(hoursParam, 10), 168) : 24;
 
     const supabase = await createClient();
 

@@ -43,9 +43,9 @@ export async function GET(
 ) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    const leagueId = parseInt(id);
+    const leagueId = Number.parseInt(id, 10);
 
-    if (isNaN(leagueId)) {
+    if (Number.isNaN(leagueId)) {
       throw new Error('Invalid league ID');
     }
 
@@ -55,11 +55,11 @@ export async function GET(
       searchParams.get('season') || String(getCurrentSeason())
     );
     const upcomingLimit = Math.min(
-      parseInt(searchParams.get('upcomingLimit') || '10'),
+      Number.parseInt(searchParams.get('upcomingLimit', 10) || '10'),
       20
     );
     const recentLimit = Math.min(
-      parseInt(searchParams.get('recentLimit') || '10'),
+      Number.parseInt(searchParams.get('recentLimit', 10) || '10'),
       20
     );
 
@@ -104,7 +104,7 @@ export async function GET(
 
       // Sort and limit
       upcomingFixtures = upcoming
-        .sort(
+        .toSorted(
           (a, b) =>
             new Date(a.fixture.date).getTime() -
             new Date(b.fixture.date).getTime()
@@ -112,7 +112,7 @@ export async function GET(
         .slice(0, upcomingLimit);
 
       recentResults = recent
-        .sort(
+        .toSorted(
           (a, b) =>
             new Date(b.fixture.date).getTime() -
             new Date(a.fixture.date).getTime()

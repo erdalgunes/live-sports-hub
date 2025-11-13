@@ -27,6 +27,35 @@ interface UseLiveMatchesReturn {
   count: number;
 }
 
+/**
+ * Helper: Update match list based on realtime payload
+ */
+function updateMatchList(
+  prev: MatchDetail[],
+  newMatch: Match,
+  fetchLiveMatches: () => void
+): MatchDetail[] {
+  // If match status changed to not live, remove it
+  if (newMatch.status !== 'live') {
+    return prev.filter((m) => m.id !== newMatch.id);
+  }
+
+  // Update existing match
+  const existingIndex = prev.findIndex((m) => m.id === newMatch.id);
+  if (existingIndex >= 0) {
+    const updated = [...prev];
+    updated[existingIndex] = {
+      ...updated[existingIndex],
+      ...newMatch,
+    };
+    return updated;
+  }
+
+  // If match just became live, refresh all live matches
+  fetchLiveMatches();
+  return prev;
+}
+
 export function useLiveMatches(): UseLiveMatchesReturn {
   const [matches, setMatches] = useState<MatchDetail[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,30 +88,8 @@ export function useLiveMatches(): UseLiveMatchesReturn {
     // Subscribe to real-time updates for all live matches
     const channel = subscribeToLiveMatches({
       onUpdate: (payload: RealtimePostgresChangesPayload<Match>) => {
-        if (isMounted && payload.new) {
-          setMatches((prev) => {
-            // If match status changed to not live, remove it
-            if (payload.new.status !== 'live') {
-              return prev.filter((m) => m.id !== payload.new.id);
-            }
-
-            // Update existing match
-            const existingIndex = prev.findIndex((m) => m.id === payload.new.id);
-            if (existingIndex >= 0) {
-              const updated = [...prev];
-              updated[existingIndex] = {
-                ...updated[existingIndex],
-                ...payload.new,
-              };
-              return updated;
-            }
-
-            // If match just became live, we should fetch it with full relations
-            // For now, we'll just refresh all live matches
-            fetchLiveMatches();
-            return prev;
-          });
-        }
+        if (!isMounted || !payload.new) return;
+        setMatches((prev) => updateMatchList(prev, payload.new, fetchLiveMatches));
       },
       onError: (err) => {
         if (isMounted) {

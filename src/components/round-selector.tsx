@@ -16,7 +16,7 @@ export function RoundSelector({ defaultRound = 1 }: RoundSelectorProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const currentRound = parseInt(searchParams.get('round') || String(defaultRound))
+  const currentRound = Number.parseInt(searchParams.get('round', 10) || String(defaultRound))
 
   const handleRoundChange = (round: string) => {
     const params = new URLSearchParams(searchParams.toString())

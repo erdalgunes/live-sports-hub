@@ -26,6 +26,37 @@ interface UseMatchEventsReturn {
   isSubscribed: boolean;
 }
 
+/**
+ * Helper: Insert new event in chronological order
+ */
+function insertEventSorted(
+  prev: MatchEventDetail[],
+  newEvent: MatchEventDetail
+): MatchEventDetail[] {
+  // Check if event already exists (prevent duplicates)
+  const exists = prev.some((e) => e.id === newEvent.id);
+  if (exists) return prev;
+
+  // Insert in chronological order (by minute)
+  return [...prev, newEvent].sort((a, b) => {
+    if (a.minute === null) return 1;
+    if (b.minute === null) return -1;
+    return a.minute - b.minute;
+  });
+}
+
+/**
+ * Helper: Update existing event
+ */
+function updateEvent(
+  prev: MatchEventDetail[],
+  updatedEvent: MatchEvent
+): MatchEventDetail[] {
+  return prev.map((event) =>
+    event.id === updatedEvent.id ? { ...event, ...updatedEvent } : event
+  );
+}
+
 export function useMatchEvents(matchId: number | null): UseMatchEventsReturn {
   const [events, setEvents] = useState<MatchEventDetail[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,36 +95,13 @@ export function useMatchEvents(matchId: number | null): UseMatchEventsReturn {
     // Subscribe to real-time event updates
     const channel = subscribeToMatchEvents(matchId, {
       onInsert: (payload: RealtimePostgresChangesPayload<MatchEvent>) => {
-        if (isMounted && payload.new) {
-          // Add new event to the list (will need to fetch full event with relations)
-          setEvents((prev) => {
-            // Check if event already exists (prevent duplicates)
-            const exists = prev.some((e) => e.id === payload.new.id);
-            if (exists) return prev;
-
-            // For now, add the raw event. In production, you'd fetch the full event with relations
-            const newEvent = payload.new as unknown as MatchEventDetail;
-
-            // Insert in chronological order (by minute)
-            const updatedEvents = [...prev, newEvent].sort((a, b) => {
-              if (a.minute === null) return 1;
-              if (b.minute === null) return -1;
-              return a.minute - b.minute;
-            });
-
-            return updatedEvents;
-          });
-        }
+        if (!isMounted || !payload.new) return;
+        const newEvent = payload.new as unknown as MatchEventDetail;
+        setEvents((prev) => insertEventSorted(prev, newEvent));
       },
       onUpdate: (payload: RealtimePostgresChangesPayload<MatchEvent>) => {
-        if (isMounted && payload.new) {
-          // Update existing event
-          setEvents((prev) =>
-            prev.map((event) =>
-              event.id === payload.new.id ? { ...event, ...payload.new } : event
-            )
-          );
-        }
+        if (!isMounted || !payload.new) return;
+        setEvents((prev) => updateEvent(prev, payload.new));
       },
       onError: (err) => {
         if (isMounted) {

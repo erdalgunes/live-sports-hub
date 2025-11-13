@@ -46,9 +46,9 @@ export async function GET(
 ) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    const teamId = parseInt(id);
+    const teamId = Number.parseInt(id, 10);
 
-    if (isNaN(teamId)) {
+    if (Number.isNaN(teamId)) {
       throw new Error('Invalid team ID');
     }
 
@@ -57,13 +57,13 @@ export async function GET(
     const season = parseInt(
       searchParams.get('season') || String(getCurrentSeason())
     );
-    const leagueId = parseInt(searchParams.get('leagueId') || '0');
+    const leagueId = Number.parseInt(searchParams.get('leagueId', 10) || '0');
     const recentLimit = Math.min(
-      parseInt(searchParams.get('recentLimit') || '5'),
+      Number.parseInt(searchParams.get('recentLimit', 10) || '5'),
       10
     );
     const upcomingLimit = Math.min(
-      parseInt(searchParams.get('upcomingLimit') || '5'),
+      Number.parseInt(searchParams.get('upcomingLimit', 10) || '5'),
       10
     );
 
@@ -121,7 +121,7 @@ export async function GET(
 
       // Sort and limit
       recentFixtures = recent
-        .sort(
+        .toSorted(
           (a, b) =>
             new Date(b.fixture.date).getTime() -
             new Date(a.fixture.date).getTime()
@@ -129,7 +129,7 @@ export async function GET(
         .slice(0, recentLimit);
 
       upcomingFixtures = upcoming
-        .sort(
+        .toSorted(
           (a, b) =>
             new Date(a.fixture.date).getTime() -
             new Date(b.fixture.date).getTime()

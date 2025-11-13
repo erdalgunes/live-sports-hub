@@ -67,7 +67,7 @@ class RequestDeduplicator {
   /**
    * Cleanup stale entries
    *
-   * Removes entries that have exceeded the TTL window.
+   * Removes entries that have exceeded the TTLglobalThis.window.
    * Called periodically to prevent memory leaks.
    */
   cleanup() {

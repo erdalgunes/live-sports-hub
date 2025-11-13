@@ -198,7 +198,7 @@ interface CacheEntry {
  */
 function generateCacheKey(endpoint: string, params: Record<string, unknown>): string {
   const sortedParams = Object.keys(params)
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .reduce((acc, key) => {
       acc[key] = params[key];
       return acc;
