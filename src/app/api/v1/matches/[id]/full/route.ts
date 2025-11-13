@@ -8,7 +8,6 @@ import {
 } from '@/lib/api-football/services';
 import {
   apiSuccess,
-  apiError,
   withErrorHandling,
   getCacheHeaders,
 } from '@/lib/utils/api-response';

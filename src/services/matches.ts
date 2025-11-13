@@ -3,13 +3,9 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type {
-  Match,
   MatchDetail,
-  MatchStats,
   MatchStatsWithTeam,
-  MatchEvent,
   MatchEventDetail,
-  MatchLineup,
   MatchLineupWithTeam,
   MatchH2H,
   MatchFilters,

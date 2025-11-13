@@ -4,7 +4,6 @@ import { NextRequest } from 'next/server';
 import { getCacheStats, clearCache } from '@/lib/api-football';
 import {
   apiSuccess,
-  apiBadRequest,
   withErrorHandling,
   getCacheHeaders,
 } from '@/lib/utils/api-response';

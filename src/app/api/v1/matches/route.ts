@@ -1,12 +1,10 @@
 // GET /api/v1/matches - List matches with filters
 import { NextRequest } from 'next/server';
 import {
-  apiSuccess,
   apiPaginated,
   validateQueryParams,
   withErrorHandling,
   getCacheHeaders,
-  buildPaginationMeta,
 } from '@/lib/utils/api-response';
 import { MatchFiltersSchema } from '@/lib/validators/matches';
 import { getMatches } from '@/services/matches';

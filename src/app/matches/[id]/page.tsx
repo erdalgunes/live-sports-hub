@@ -26,7 +26,7 @@ interface MatchDetailPageProps {
 // Generate metadata for SEO
 export async function generateMetadata({ params }: MatchDetailPageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const matchId = parseInt(resolvedParams.id, 10);
+  const matchId = Number.parseInt(resolvedParams.id, 10);
 
   if (Number.isNaN(matchId)) {
     return { title: 'Match Not Found' };
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: MatchDetailPageProps): Promis
 // Main page component (Server Component)
 export default async function MatchDetailPage({ params }: MatchDetailPageProps) {
   const resolvedParams = await params;
-  const matchId = parseInt(resolvedParams.id, 10);
+  const matchId = Number.parseInt(resolvedParams.id, 10);
 
   // Validate match ID
   if (Number.isNaN(matchId)) {

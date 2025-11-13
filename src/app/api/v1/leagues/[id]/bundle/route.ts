@@ -6,7 +6,6 @@ import {
 } from '@/lib/api-football/services';
 import {
   apiSuccess,
-  apiError,
   withErrorHandling,
   getCacheHeaders,
 } from '@/lib/utils/api-response';
@@ -51,8 +50,9 @@ export async function GET(
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
-    const season = parseInt(
-      searchParams.get('season') || String(getCurrentSeason())
+    const season = Number.parseInt(
+      searchParams.get('season') || String(getCurrentSeason()),
+      10
     );
     const upcomingLimit = Math.min(
       Number.parseInt(searchParams.get('upcomingLimit', 10) || '10'),

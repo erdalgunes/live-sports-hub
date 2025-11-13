@@ -9,7 +9,6 @@ import {
   fetchWithCache,
   API_ENDPOINTS,
   CACHE_TTL,
-  type ApiFootballResponse,
 } from './client';
 
 // ============================================================================
