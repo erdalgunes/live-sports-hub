@@ -80,6 +80,7 @@ export function MatchHeader({
             {isLive && showLiveIndicator && (
               <span className="match-header__live-indicator" aria-label="Live match">
                 <span className="match-header__live-dot" />
+                {' '}
                 LIVE
               </span>
             )}
