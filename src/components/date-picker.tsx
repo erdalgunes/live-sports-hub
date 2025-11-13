@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
+import { format, startOfMonth } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import type { Matcher } from 'react-day-picker'
+import { logger } from '@/lib/utils/logger'
 
 interface DatePickerProps {
   defaultDate?: Date
@@ -39,8 +39,6 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
     const fetchMatchDays = async () => {
       try {
         const start = startOfMonth(currentMonth)
-        const end = endOfMonth(currentMonth)
-        const days = eachDayOfInterval({ start, end })
 
         // Fetch fixtures for the month
         const response = await fetch(
@@ -53,7 +51,11 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
           setMatchDays(daysWithMatches)
         }
       } catch (error) {
-        console.error('Error fetching match days:', error)
+        logger.error('Failed to fetch match days', {
+          error,
+          month: currentMonth,
+          context: 'date-picker',
+        })
       }
     }
 
@@ -146,8 +148,8 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
               hasMatches: 'has-matches',
             }}
             labels={{
-              labelPrevious: (month) => `Go to previous month`,
-              labelNext: (month) => `Go to next month`,
+              labelPrevious: () => `Go to previous month`,
+              labelNext: () => `Go to next month`,
             }}
             initialFocus
           />

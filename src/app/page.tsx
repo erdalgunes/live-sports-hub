@@ -3,6 +3,7 @@ import { MatchList } from '@/components/matches/match-list'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Fixture } from '@/types/api-football'
+import { logger } from '@/lib/utils/logger'
 
 export const revalidate = 60 // ISR: revalidate every 60 seconds
 
@@ -17,7 +18,7 @@ export default async function HomePage() {
     fixtures = data.response
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to load live matches'
-    console.error('Error fetching live fixtures:', e)
+    logger.error('Failed to fetch live fixtures', { error: e, context: 'home-page' })
   }
 
   return (

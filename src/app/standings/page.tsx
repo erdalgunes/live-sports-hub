@@ -9,6 +9,7 @@ import {
   isCacheStale,
 } from '@/lib/supabase/standings-cache'
 import type { Standing } from '@/types/api-football'
+import { logger } from '@/lib/utils/logger'
 
 // Extended Standing type with custom form properties
 interface EnhancedStanding extends Standing {
@@ -72,12 +73,15 @@ export default async function StandingsPage({ searchParams }: StandingsPageProps
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leagueId, season }),
       }).catch((err) => {
-        console.error('Failed to trigger cache refresh:', err)
+        logger.warn('Failed to trigger cache refresh', {
+          error: err,
+          context: 'standings-page',
+        })
       })
     }
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to load standings'
-    console.error('Error fetching standings:', e)
+    logger.error('Failed to fetch standings', { error: e, context: 'standings-page' })
   }
 
   return (

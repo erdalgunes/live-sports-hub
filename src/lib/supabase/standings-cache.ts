@@ -6,6 +6,7 @@
 import { createClient as createServerClient } from './server'
 import { getFixturesByTeam } from '@/lib/api/api-football'
 import type { Fixture } from '@/types/api-football'
+import { logger } from '@/lib/utils/logger'
 
 export interface CachedFixture {
   fixtureId: number
@@ -212,14 +213,16 @@ export async function refreshTeamFixturesCache(
       // Check if this team already has fresh cache
       const existingCache = await getTeamFixturesFromCache(teamId, leagueId, season)
       if (existingCache && existingCache.length > 0) {
-        console.log(`[Cache Refresh] Team ${teamId} already cached, skipping`)
+        logger.info('Team already cached, skipping', { teamId, context: 'cache-refresh' })
         skipped++
         continue
       }
 
-      console.log(
-        `[Cache Refresh] Fetching fixtures for team ${teamId} (${i + 1}/${teamIds.length})`
-      )
+      logger.info('Fetching fixtures for team', {
+        teamId,
+        progress: `${i + 1}/${teamIds.length}`,
+        context: 'cache-refresh',
+      })
 
       // Fetch last 10 fixtures for the team
       const response = await getFixturesByTeam(teamId, season, leagueId, 10)
@@ -248,23 +251,29 @@ export async function refreshTeamFixturesCache(
 
       if (isRateLimit) {
         consecutiveRateLimitErrors++
-        console.error(
-          `[Cache Refresh] Rate limit hit for team ${teamId}, attempt ${consecutiveRateLimitErrors}`
-        )
+        logger.warn('Rate limit hit for team', {
+          teamId,
+          attempt: consecutiveRateLimitErrors,
+          context: 'cache-refresh',
+        })
 
         // Exponentially increase delay on rate limits
         delay = Math.min(10000, delay * 1.5)
 
         // If we hit 3 consecutive rate limits, stop and let the cache refresh later
         if (consecutiveRateLimitErrors >= 3) {
-          console.error('[Cache Refresh] Too many rate limits, stopping refresh')
+          logger.error('Too many rate limits, stopping refresh', { context: 'cache-refresh' })
           failed++
           break
         }
 
         failed++
       } else {
-        console.error(`[Cache Refresh] Failed to refresh cache for team ${teamId}:`, error)
+        logger.error('Failed to refresh cache for team', {
+          teamId,
+          error,
+          context: 'cache-refresh',
+        })
         failed++
       }
     }

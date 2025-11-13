@@ -10,6 +10,7 @@ import { DatePicker } from '@/components/date-picker'
 import { DateQuickNav } from '@/components/date-quick-nav'
 import { getCurrentSeason } from '@/lib/utils/season'
 import type { Fixture } from '@/types/api-football'
+import { logger } from '@/lib/utils/logger'
 
 export const revalidate = 3600 // ISR: 1 hour
 
@@ -39,7 +40,11 @@ export default async function FixturesPage({ searchParams }: FixturesPageProps) 
       fixturesData = data.response
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load fixtures'
-      console.error('Error fetching fixtures:', e)
+      logger.error('Failed to fetch fixtures by date', {
+        error: e,
+        date: selectedDateFormatted,
+        context: 'fixtures-page',
+      })
     }
   } else if (view === 'round') {
     try {
@@ -47,7 +52,11 @@ export default async function FixturesPage({ searchParams }: FixturesPageProps) 
       roundFixturesData = data.response
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load fixtures'
-      console.error('Error fetching fixtures:', e)
+      logger.error('Failed to fetch fixtures by round', {
+        error: e,
+        round,
+        context: 'fixtures-page',
+      })
     }
   }
 

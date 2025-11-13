@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getStandings } from '@/lib/api/api-football'
 import { refreshTeamFixturesCache } from '@/lib/supabase/standings-cache'
 import type { Standing } from '@/types/api-football'
+import { logger } from '@/lib/utils/logger'
 
 /**
  * API route to refresh standings cache in the background
@@ -27,7 +28,11 @@ export async function POST(request: NextRequest) {
     const leagueId = body.leagueId || 39 // Default to Premier League
     const season = body.season || new Date().getFullYear()
 
-    console.log(`[Cache Refresh] Starting for league ${leagueId}, season ${season}`)
+    logger.info('Cache refresh starting', {
+      leagueId,
+      season,
+      context: 'cache-refresh-api',
+    })
 
     // Fetch standings to get list of teams
     const standingsData = await getStandings(leagueId, season)
@@ -40,12 +45,20 @@ export async function POST(request: NextRequest) {
     // Extract team IDs
     const teamIds = standings.map((team: Standing) => team.team.id)
 
-    console.log(`[Cache Refresh] Found ${teamIds.length} teams to refresh`)
+    logger.info('Found teams to refresh', {
+      teamCount: teamIds.length,
+      context: 'cache-refresh-api',
+    })
 
     // Refresh cache for all teams with rate limiting
     const result = await refreshTeamFixturesCache(teamIds, leagueId, season)
 
-    console.log(`[Cache Refresh] Completed: ${result.success} success, ${result.failed} failed`)
+    logger.info('Cache refresh completed', {
+      success: result.success,
+      failed: result.failed,
+      skipped: result.skipped,
+      context: 'cache-refresh-api',
+    })
 
     return NextResponse.json({
       message: 'Cache refresh completed',
@@ -57,7 +70,10 @@ export async function POST(request: NextRequest) {
       skipped: result.skipped,
     })
   } catch (error) {
-    console.error('[Cache Refresh] Error:', error)
+    logger.error('Cache refresh failed', {
+      error,
+      context: 'cache-refresh-api',
+    })
     return NextResponse.json(
       {
         error: 'Failed to refresh cache',
