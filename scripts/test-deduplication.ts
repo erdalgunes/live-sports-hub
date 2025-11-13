@@ -79,4 +79,4 @@ async function testDeduplication() {
 }
 
 // Run tests
-testDeduplication().catch(console.error);
+await testDeduplication();
