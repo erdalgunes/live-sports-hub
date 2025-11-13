@@ -312,15 +312,24 @@ export interface ApiFootballPlayer {
 // Fixture Services
 // ============================================================================
 
+/**
+ * Get fixture by ID with adaptive TTL caching
+ * - Live: 60s
+ * - Finished: 24h
+ * - Upcoming: 1h-5m based on time
+ */
 export async function getFixtureById(fixtureId: number) {
   const data = await fetchWithCache<ApiFootballFixture[]>(
     API_ENDPOINTS.FIXTURES_BY_ID,
-    { id: fixtureId },
-    CACHE_TTL.MEDIUM
+    { id: fixtureId }
+    // No TTL = adaptive caching
   );
   return data[0] || null;
 }
 
+/**
+ * Get all live fixtures (no cache)
+ */
 export async function getLiveFixtures() {
   return fetchWithCache<ApiFootballFixture[]>(
     API_ENDPOINTS.FIXTURES_LIVE,
@@ -329,51 +338,69 @@ export async function getLiveFixtures() {
   );
 }
 
+/**
+ * Get fixtures by date with adaptive TTL
+ */
 export async function getFixturesByDate(date: string) {
   return fetchWithCache<ApiFootballFixture[]>(
     API_ENDPOINTS.FIXTURES_BY_DATE,
-    { date },
-    CACHE_TTL.SHORT
+    { date }
+    // Adaptive: will be 60s for live, 24h for finished, etc.
   );
 }
 
+/**
+ * Get fixtures by league with adaptive TTL
+ */
 export async function getFixturesByLeague(leagueId: number, season: number) {
   return fetchWithCache<ApiFootballFixture[]>(
     API_ENDPOINTS.FIXTURES_BY_LEAGUE,
-    { league: leagueId, season },
-    CACHE_TTL.MEDIUM
+    { league: leagueId, season }
+    // Adaptive caching
   );
 }
 
+/**
+ * Get fixture statistics with adaptive TTL
+ */
 export async function getFixtureStatistics(fixtureId: number) {
   return fetchWithCache<ApiFootballStatistic[]>(
     API_ENDPOINTS.FIXTURES_STATISTICS,
-    { fixture: fixtureId },
-    CACHE_TTL.MEDIUM
+    { fixture: fixtureId }
+    // Adaptive caching
   );
 }
 
+/**
+ * Get fixture events (goals, cards) with adaptive TTL
+ */
 export async function getFixtureEvents(fixtureId: number) {
   return fetchWithCache<ApiFootballEvent[]>(
     API_ENDPOINTS.FIXTURES_EVENTS,
-    { fixture: fixtureId },
-    CACHE_TTL.SHORT
+    { fixture: fixtureId }
+    // Adaptive caching
   );
 }
 
+/**
+ * Get fixture lineups with adaptive TTL
+ */
 export async function getFixtureLineups(fixtureId: number) {
   return fetchWithCache<ApiFootballLineup[]>(
     API_ENDPOINTS.FIXTURES_LINEUPS,
-    { fixture: fixtureId },
-    CACHE_TTL.MEDIUM
+    { fixture: fixtureId }
+    // Adaptive caching
   );
 }
 
+/**
+ * Get head-to-head fixtures (historical data - long cache)
+ */
 export async function getH2HFixtures(team1Id: number, team2Id: number) {
   return fetchWithCache<ApiFootballFixture[]>(
     API_ENDPOINTS.FIXTURES_H2H,
     { h2h: `${team1Id}-${team2Id}` },
-    CACHE_TTL.LONG
+    CACHE_TTL.LONG // H2H is historical, use explicit long cache
   );
 }
 
