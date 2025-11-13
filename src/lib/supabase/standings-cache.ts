@@ -5,6 +5,7 @@
 
 import { createClient as createServerClient } from './server'
 import { getFixturesByTeam } from '@/lib/api/api-football'
+import type { Fixture } from '@/types/api-football'
 
 export interface CachedFixture {
   fixtureId: number
@@ -44,7 +45,7 @@ export async function getTeamFixturesFromCache(
     .eq('team_id', teamId)
     .eq('league_id', leagueId)
     .eq('season', season)
-    .single()) as { data: { fixtures: unknown; expires_at: string } | null; error: any }
+    .single()) as { data: { fixtures: unknown; expires_at: string } | null; error: Error | null }
 
   if (error || !data) return null
 
@@ -74,7 +75,7 @@ export async function getAllTeamFixturesFromCache(
     .eq('league_id', leagueId)
     .eq('season', season)) as {
     data: Array<{ team_id: number; fixtures: unknown; expires_at: string }> | null
-    error: any
+    error: Error | null
   }
 
   if (error || !data) return new Map()
@@ -106,7 +107,7 @@ export async function isCacheStale(leagueId: number, season: number): Promise<bo
     .eq('league_id', leagueId)
     .eq('season', season)
     .limit(1)
-    .single()) as { data: { expires_at: string } | null; error: any }
+    .single()) as { data: { expires_at: string } | null; error: Error | null }
 
   if (error || !data) return true // No cache = stale
 
@@ -129,12 +130,21 @@ export async function setTeamFixturesToCache(
   const expiresAt = new Date(now.getTime() + CACHE_DURATION_MS)
 
   // Type assertion to work around Supabase type inference issues
-  await (supabase.from('team_fixtures_cache') as any).upsert(
+  interface TeamFixturesCacheRow {
+    team_id: number
+    league_id: number
+    season: number
+    fixtures: unknown
+    cached_at: string
+    expires_at: string
+  }
+
+  await supabase.from('team_fixtures_cache').upsert<TeamFixturesCacheRow>(
     {
       team_id: teamId,
       league_id: leagueId,
       season: season,
-      fixtures: fixtures as any,
+      fixtures: fixtures as unknown,
       cached_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
     },
@@ -224,7 +234,7 @@ export async function refreshTeamFixturesCache(
       const fixtures = response.response || []
 
       // Transform to CachedFixture format
-      const cachedFixtures: CachedFixture[] = fixtures.map((f: any) => ({
+      const cachedFixtures: CachedFixture[] = fixtures.map((f: Fixture) => ({
         fixtureId: f.fixture.id,
         date: f.fixture.date,
         homeTeamId: f.teams.home.id,
