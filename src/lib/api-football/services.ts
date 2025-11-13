@@ -404,6 +404,22 @@ export async function getH2HFixtures(team1Id: number, team2Id: number) {
   );
 }
 
+/**
+ * Get fixtures by team with adaptive TTL
+ */
+export async function getFixturesByTeam(
+  teamId: number,
+  season: number,
+  leagueId: number,
+  last: number = 10
+) {
+  return fetchWithCache<ApiFootballFixture[]>(
+    API_ENDPOINTS.FIXTURES_BY_LEAGUE, // Using same endpoint with team filter
+    { team: teamId, season, league: leagueId, last }
+    // Adaptive caching
+  );
+}
+
 // ============================================================================
 // League/Tournament Services
 // ============================================================================

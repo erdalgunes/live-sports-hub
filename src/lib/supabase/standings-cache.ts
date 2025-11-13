@@ -1,10 +1,13 @@
 /**
  * Supabase-based caching for team fixtures data
  * Implements stale-while-revalidate strategy for standings form indicators
+ *
+ * Note: This is a second-layer cache for *processed* fixture data.
+ * The underlying API-Football requests use the generic cache with adaptive TTL.
  */
 
 import { createClient as createServerClient } from './server'
-import { getFixturesByTeam } from '@/lib/api/api-football'
+import { getFixturesByTeam } from '@/lib/api-football/services'
 
 export interface CachedFixture {
   fixtureId: number
@@ -219,9 +222,8 @@ export async function refreshTeamFixturesCache(
 
       console.log(`[Cache Refresh] Fetching fixtures for team ${teamId} (${i + 1}/${teamIds.length})`)
 
-      // Fetch last 10 fixtures for the team
-      const response = await getFixturesByTeam(teamId, season, leagueId, 10)
-      const fixtures = response.response || []
+      // Fetch last 10 fixtures for the team (now uses API-Football service with adaptive TTL)
+      const fixtures = await getFixturesByTeam(teamId, season, leagueId, 10)
 
       // Transform to CachedFixture format
       const cachedFixtures: CachedFixture[] = fixtures.map((f: any) => ({
