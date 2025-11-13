@@ -46,7 +46,7 @@ export async function GET(
     const leagueId = parseInt(id);
 
     if (isNaN(leagueId)) {
-      return apiError('Invalid league ID', 400);
+      throw new Error('Invalid league ID');
     }
 
     // Parse query parameters
@@ -71,7 +71,7 @@ export async function GET(
 
     // Core resource (standings) is required
     if (standingsResult.status === 'rejected' || !standingsResult.value) {
-      return apiError('League standings not found', 404);
+      throw new Error('League standings not found');
     }
 
     const standingsData = standingsResult.value;

@@ -19,6 +19,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { deduplicator } from './deduplicator';
 
 // API-Football configuration
 const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io';
@@ -340,7 +341,13 @@ async function fetchFromApiFootball<T>(
 }
 
 /**
- * Main fetch function with caching
+ * Main fetch function with caching and request deduplication
+ *
+ * Architecture:
+ * 1. Request Deduplication - Coalesce concurrent identical requests
+ * 2. Supabase Cache - Check PostgreSQL JSONB cache
+ * 3. API-Football - Fetch from external API (if cache miss)
+ * 4. Store in Cache - Persist for future requests
  *
  * @param endpoint - API endpoint path
  * @param params - Query parameters
@@ -351,36 +358,42 @@ export async function fetchWithCache<T>(
   params: Record<string, unknown> = {},
   ttl?: number
 ): Promise<T> {
-  // Skip cache for live data
-  if (ttl === CACHE_TTL.LIVE) {
-    return fetchFromApiFootball<T>(endpoint, params);
-  }
+  const cacheKey = generateCacheKey(endpoint, params);
 
-  // Try to fetch from cache first
-  const cachedData = await fetchFromCache(endpoint, params);
-  if (cachedData !== null) {
-    return cachedData as T;
-  }
+  // Wrap entire fetch flow in deduplicator
+  // This prevents thundering herd: 10,000 concurrent requests → 1 API call
+  return deduplicator.dedupe(cacheKey, async () => {
+    // Skip cache for live data
+    if (ttl === CACHE_TTL.LIVE) {
+      return fetchFromApiFootball<T>(endpoint, params);
+    }
 
-  // Cache miss - fetch from API-Football
-  const data = await fetchFromApiFootball<T>(endpoint, params);
+    // Try to fetch from cache first
+    const cachedData = await fetchFromCache(endpoint, params);
+    if (cachedData !== null) {
+      return cachedData as T;
+    }
 
-  // Calculate TTL: use provided TTL or adaptive calculation
-  let finalTTL: number;
-  if (ttl !== undefined) {
-    finalTTL = ttl;
-    console.log(`[Cache] Using explicit TTL: ${ttl}s`);
-  } else {
-    finalTTL = calculateAdaptiveTTL(endpoint, data);
-    console.log(`[Cache] Using adaptive TTL: ${finalTTL}s`);
-  }
+    // Cache miss - fetch from API-Football
+    const data = await fetchFromApiFootball<T>(endpoint, params);
 
-  // Store in cache (don't await - fire and forget)
-  storeInCache(endpoint, params, data, finalTTL).catch((error) => {
-    console.error('[Cache] Failed to store:', error);
+    // Calculate TTL: use provided TTL or adaptive calculation
+    let finalTTL: number;
+    if (ttl !== undefined) {
+      finalTTL = ttl;
+      console.log(`[Cache] Using explicit TTL: ${ttl}s`);
+    } else {
+      finalTTL = calculateAdaptiveTTL(endpoint, data);
+      console.log(`[Cache] Using adaptive TTL: ${finalTTL}s`);
+    }
+
+    // Store in cache (don't await - fire and forget)
+    storeInCache(endpoint, params, data, finalTTL).catch((error) => {
+      console.error('[Cache] Failed to store:', error);
+    });
+
+    return data;
   });
-
-  return data;
 }
 
 /**

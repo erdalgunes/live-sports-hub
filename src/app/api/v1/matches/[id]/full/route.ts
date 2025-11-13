@@ -49,7 +49,7 @@ export async function GET(
     const fixtureId = parseInt(id);
 
     if (isNaN(fixtureId)) {
-      return apiError('Invalid match ID', 400);
+      throw new Error('Invalid match ID');
     }
 
     // Fetch all data in parallel using Promise.allSettled
@@ -64,7 +64,7 @@ export async function GET(
 
     // Core resource (fixture) is required
     if (fixtureResult.status === 'rejected' || !fixtureResult.value) {
-      return apiError('Match not found', 404);
+      throw new Error('Match not found');
     }
 
     const fixture = fixtureResult.value;

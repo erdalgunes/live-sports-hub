@@ -49,7 +49,7 @@ export async function GET(
     const teamId = parseInt(id);
 
     if (isNaN(teamId)) {
-      return apiError('Invalid team ID', 400);
+      throw new Error('Invalid team ID');
     }
 
     // Parse query parameters
@@ -78,7 +78,7 @@ export async function GET(
 
     // Core resource (team) is required
     if (teamResult.status === 'rejected' || !teamResult.value) {
-      return apiError('Team not found', 404);
+      throw new Error('Team not found');
     }
 
     const team = teamResult.value;
