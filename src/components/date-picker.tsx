@@ -81,12 +81,20 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
             'w-[240px] justify-start text-left font-normal',
             !date && 'text-muted-foreground'
           )}
+          aria-label={date ? `Change date. Currently selected: ${format(date, 'PPPP')}` : 'Choose date'}
+          aria-haspopup="dialog"
+          aria-expanded={isOpen}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+          <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
           {date ? format(date, 'PPP') : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent
+        className="w-auto p-0"
+        align="start"
+        role="dialog"
+        aria-label="Choose date"
+      >
         <style jsx global>{`
           /* Days with matches styling */
           .rdp-day_button.has-matches {
@@ -125,20 +133,37 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
             background-color: hsl(var(--primary));
           }
         `}</style>
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={handleDateSelect}
-          onMonthChange={setCurrentMonth}
-          month={currentMonth}
-          modifiers={{
-            hasMatches: matchDays
-          }}
-          modifiersClassNames={{
-            hasMatches: 'has-matches'
-          }}
-          initialFocus
-        />
+        <div>
+          <div className="sr-only" role="status" aria-live="polite">
+            Use arrow keys to navigate dates. Press Enter to select. Days with matches are indicated.
+          </div>
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={handleDateSelect}
+            onMonthChange={setCurrentMonth}
+            month={currentMonth}
+            modifiers={{
+              hasMatches: matchDays
+            }}
+            modifiersClassNames={{
+              hasMatches: 'has-matches'
+            }}
+            labels={{
+              labelPrevious: (month) => `Go to previous month`,
+              labelNext: (month) => `Go to next month`,
+            }}
+            initialFocus
+          />
+          {matchDays.length > 0 && (
+            <div className="px-3 pb-3 pt-0">
+              <p className="text-xs text-muted-foreground">
+                <span className="inline-block w-2 h-2 rounded-full bg-primary mr-1.5 align-middle" aria-hidden="true"></span>
+                Days with scheduled matches
+              </p>
+            </div>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   )

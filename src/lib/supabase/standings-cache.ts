@@ -44,7 +44,7 @@ export async function getTeamFixturesFromCache(
     .eq('team_id', teamId)
     .eq('league_id', leagueId)
     .eq('season', season)
-    .single()
+    .single() as { data: { fixtures: unknown; expires_at: string } | null; error: any }
 
   if (error || !data) return null
 
@@ -72,7 +72,10 @@ export async function getAllTeamFixturesFromCache(
     .from('team_fixtures_cache')
     .select('team_id, fixtures, expires_at')
     .eq('league_id', leagueId)
-    .eq('season', season)
+    .eq('season', season) as {
+      data: Array<{ team_id: number; fixtures: unknown; expires_at: string }> | null
+      error: any
+    }
 
   if (error || !data) return new Map()
 
@@ -106,7 +109,7 @@ export async function isCacheStale(
     .eq('league_id', leagueId)
     .eq('season', season)
     .limit(1)
-    .single()
+    .single() as { data: { expires_at: string } | null; error: any }
 
   if (error || !data) return true // No cache = stale
 
@@ -128,18 +131,20 @@ export async function setTeamFixturesToCache(
   const now = new Date()
   const expiresAt = new Date(now.getTime() + CACHE_DURATION_MS)
 
-  await supabase
-    .from('team_fixtures_cache')
-    .upsert({
+  // Type assertion to work around Supabase type inference issues
+  await (supabase.from('team_fixtures_cache') as any).upsert(
+    {
       team_id: teamId,
       league_id: leagueId,
       season: season,
       fixtures: fixtures as any,
       cached_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
-    }, {
-      onConflict: 'team_id,league_id,season'
-    })
+    },
+    {
+      onConflict: 'team_id,league_id,season',
+    }
+  )
 }
 
 /**

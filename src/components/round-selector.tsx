@@ -38,19 +38,20 @@ export function RoundSelector({ defaultRound = 1 }: RoundSelectorProps) {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" role="group" aria-label="Round navigation">
       <Button
         variant="outline"
         size="icon"
         onClick={handlePrevious}
         disabled={currentRound <= 1}
         className="h-9 w-9"
+        aria-label={`Go to round ${currentRound - 1}`}
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
       </Button>
 
       <Select value={String(currentRound)} onValueChange={handleRoundChange}>
-        <SelectTrigger className="w-[140px]">
+        <SelectTrigger className="w-[140px]" aria-label="Select round">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -68,8 +69,9 @@ export function RoundSelector({ defaultRound = 1 }: RoundSelectorProps) {
         onClick={handleNext}
         disabled={currentRound >= MAX_ROUNDS}
         className="h-9 w-9"
+        aria-label={`Go to round ${currentRound + 1}`}
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-4 w-4" aria-hidden="true" />
       </Button>
     </div>
   )

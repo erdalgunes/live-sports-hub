@@ -17,8 +17,21 @@ export function CompactMatchRow({ fixture }: CompactMatchRowProps) {
   const matchDate = format(new Date(match.date), 'dd/MM/yy')
   const status = match.status.short
 
+  const getMatchDescription = () => {
+    if (status === 'FT') {
+      return `${teams.home.name} ${homeScore} vs ${awayScore} ${teams.away.name} - Full Time on ${matchDate}`
+    }
+    if (homeScore === awayScore) {
+      return `${teams.home.name} ${homeScore} vs ${awayScore} ${teams.away.name} - Draw`
+    }
+    return `${teams.home.name} ${homeScore} vs ${awayScore} ${teams.away.name} on ${matchDate}`
+  }
+
   return (
-    <div className="flex items-center h-[72px] hover:bg-muted/50 rounded-sm transition-colors px-4 cursor-pointer"
+    <div
+      className="flex items-center h-[72px] hover:bg-muted/50 rounded-sm transition-colors px-4 cursor-pointer"
+      role="article"
+      aria-label={getMatchDescription()}
     >
       {/* Date and Status */}
       <div className="text-center mx-2 flex-shrink-0 w-20">

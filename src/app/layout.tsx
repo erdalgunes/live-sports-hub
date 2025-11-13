@@ -48,7 +48,7 @@ export default function RootLayout({
           <QueryProvider>
             <div className="min-h-screen bg-background">
               <Header />
-              <main className="container mx-auto px-4 py-6">
+              <main id="main-content" className="container mx-auto px-4 py-6">
                 {children}
               </main>
             </div>

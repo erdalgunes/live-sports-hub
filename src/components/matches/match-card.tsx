@@ -14,8 +14,19 @@ interface MatchCardProps {
 export function MatchCard({ fixture }: MatchCardProps) {
   const { fixture: match, teams, goals, league } = fixture
 
+  const getMatchDescription = () => {
+    const status = match.status.short
+    if (status === 'FT') {
+      return `${teams.home.name} ${goals.home} vs ${goals.away} ${teams.away.name} - Full Time`
+    }
+    if (status === 'LIVE' || status === '1H' || status === '2H' || status === 'HT') {
+      return `${teams.home.name} ${goals.home} vs ${goals.away} ${teams.away.name} - Live ${match.status.elapsed ? `${match.status.elapsed}'` : ''}`
+    }
+    return `${teams.home.name} vs ${teams.away.name} - Scheduled for ${formatDate(match.date, DATE_FORMATS.DISPLAY_WITH_TIME)}`
+  }
+
   return (
-    <Link href={`/fixtures/${match.id}`} className="block">
+    <Link href={`/fixtures/${match.id}`} className="block" aria-label={getMatchDescription()}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer">
         <CardContent className="p-4">
           {/* League info */}
