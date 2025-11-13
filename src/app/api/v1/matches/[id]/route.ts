@@ -33,12 +33,14 @@ export async function GET(
     }
 
     // Determine cache strategy based on match status
-    const cacheStrategy =
-      match.status === 'live'
-        ? 'live'
-        : match.status === 'finished'
-          ? 'long'
-          : 'short';
+    let cacheStrategy: 'live' | 'long' | 'short';
+    if (match.status === 'live') {
+      cacheStrategy = 'live';
+    } else if (match.status === 'finished') {
+      cacheStrategy = 'long';
+    } else {
+      cacheStrategy = 'short';
+    }
 
     // Return match details
     return apiSuccess(match, {

@@ -13,7 +13,7 @@ import { MatchHeader, MatchTimeline, MatchStats } from '@/components/match';
 import type { MatchDetail } from '@/types/matches';
 
 interface MatchDetailClientProps {
-  initialMatch: MatchDetail;
+  readonly initialMatch: MatchDetail;
 }
 
 type TabType = 'overview' | 'stats' | 'lineups' | 'h2h';
@@ -23,7 +23,7 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
 
   // Real-time match data
   const { match: liveMatch, isSubscribed } = useMatchLive(initialMatch.id);
-  const { events, loading: eventsLoading } = useMatchEvents(initialMatch.id);
+  const { events } = useMatchEvents(initialMatch.id);
   const { stats, loading: statsLoading } = useMatchStats(initialMatch.id);
 
   // Use live match data if available, otherwise use initial data
@@ -44,6 +44,7 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
         {isSubscribed && match.status === 'live' && (
           <div className="match-detail__realtime-status">
             <span className="match-detail__realtime-indicator" />
+            {' '}
             Real-time updates active
           </div>
         )}

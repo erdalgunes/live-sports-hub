@@ -19,15 +19,15 @@ import React from 'react';
 
 interface LiveIndicatorProps {
   /** Show the text "LIVE" next to the indicator */
-  showText?: boolean;
+  readonly showText?: boolean;
   /** Display match minute */
-  minute?: number | null;
+  readonly minute?: number | null;
   /** Size variant */
-  size?: 'small' | 'medium' | 'large';
+  readonly size?: 'small' | 'medium' | 'large';
   /** Custom className */
-  className?: string;
+  readonly className?: string;
   /** Pulse animation */
-  animated?: boolean;
+  readonly animated?: boolean;
 }
 
 export function LiveIndicator({

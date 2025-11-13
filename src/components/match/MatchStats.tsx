@@ -19,19 +19,19 @@ import React from 'react';
 import type { MatchStats as MatchStatsType } from '@/types/matches';
 
 interface MatchStatsProps {
-  homeStats: MatchStatsType | null;
-  awayStats: MatchStatsType | null;
-  homeTeamName: string;
-  awayTeamName: string;
-  className?: string;
+  readonly homeStats: MatchStatsType | null;
+  readonly awayStats: MatchStatsType | null;
+  readonly homeTeamName: string;
+  readonly awayTeamName: string;
+  readonly className?: string;
 }
 
 interface StatRowProps {
-  label: string;
-  homeValue: number;
-  awayValue: number;
-  isPercentage?: boolean;
-  formatter?: (value: number) => string;
+  readonly label: string;
+  readonly homeValue: number;
+  readonly awayValue: number;
+  readonly isPercentage?: boolean;
+  readonly formatter?: (value: number) => string;
 }
 
 function StatRow({

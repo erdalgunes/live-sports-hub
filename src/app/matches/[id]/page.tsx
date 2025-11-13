@@ -20,7 +20,7 @@ import { getMatchById } from '@/services/matches';
 import MatchDetailClient from './MatchDetailClient';
 
 interface MatchDetailPageProps {
-  params: Promise<{ id: string }>;
+  readonly params: Promise<{ id: string }>;
 }
 
 // Generate metadata for SEO

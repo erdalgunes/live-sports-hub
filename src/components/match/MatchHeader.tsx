@@ -19,9 +19,9 @@ import React from 'react';
 import type { MatchDetail } from '@/types/matches';
 
 interface MatchHeaderProps {
-  match: MatchDetail;
-  showLiveIndicator?: boolean;
-  className?: string;
+  readonly match: MatchDetail;
+  readonly showLiveIndicator?: boolean;
+  readonly className?: string;
 }
 
 export function MatchHeader({

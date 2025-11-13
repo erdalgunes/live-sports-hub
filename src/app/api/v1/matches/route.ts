@@ -28,12 +28,14 @@ export async function GET(request: NextRequest) {
     const { matches, total } = await getMatches(filters);
 
     // Determine cache strategy based on filters
-    const cacheStrategy =
-      filters.status === 'live'
-        ? 'live'
-        : filters.status === 'finished'
-          ? 'long'
-          : 'medium';
+    let cacheStrategy: 'live' | 'long' | 'medium';
+    if (filters.status === 'live') {
+      cacheStrategy = 'live';
+    } else if (filters.status === 'finished') {
+      cacheStrategy = 'long';
+    } else {
+      cacheStrategy = 'medium';
+    }
 
     // Return paginated response
     return apiPaginated(

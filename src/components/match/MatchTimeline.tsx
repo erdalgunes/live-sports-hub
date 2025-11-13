@@ -19,10 +19,10 @@ import React from 'react';
 import type { MatchEventDetail, EventType } from '@/types/matches';
 
 interface MatchTimelineProps {
-  events: MatchEventDetail[];
-  homeTeamId: number;
-  awayTeamId: number;
-  className?: string;
+  readonly events: MatchEventDetail[];
+  readonly homeTeamId: number;
+  readonly awayTeamId: number;
+  readonly className?: string;
 }
 
 // Event icons (using Unicode symbols for simplicity)
