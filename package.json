@@ -13,6 +13,13 @@
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch",
+    "test:ci": "vitest run --coverage --reporter=verbose",
+    "db:reset": "supabase db reset --local",
+    "db:types": "supabase gen types typescript --local > src/types/supabase.ts",
+    "clean": "rm -rf .next out node_modules/.cache coverage",
+    "clean:install": "pnpm clean && rm -rf node_modules pnpm-lock.yaml && pnpm install",
     "prepare": "husky"
   },
   "dependencies": {
@@ -45,6 +52,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "^4.0.8",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
     "happy-dom": "^20.0.10",

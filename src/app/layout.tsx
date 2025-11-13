@@ -5,6 +5,10 @@ import { QueryProvider } from '@/components/providers/query-provider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { Header } from '@/components/layout/header'
 import { APP_CONFIG } from '@/lib/constants'
+import { validateEnv } from '@/lib/validation/env'
+
+// Validate environment variables at app startup
+validateEnv()
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

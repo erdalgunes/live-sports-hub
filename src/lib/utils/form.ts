@@ -1,7 +1,26 @@
 /**
- * Calculate form from home/away records
- * The API provides overall form, but we can approximate home/away form
- * by looking at the win/draw/loss pattern in home or away stats
+ * Calculate form string from match statistics
+ *
+ * Generates a form string (e.g., "WWDL") based on win/draw/loss ratios.
+ * The API provides overall form, but this approximates home/away-specific
+ * form by distributing results proportionally.
+ *
+ * @param stats - Match statistics containing wins, draws, losses, and total played
+ * @returns Form string (max 5 characters: W/D/L), empty string if no games played
+ *
+ * @example
+ * ```ts
+ * // Team with 3 wins, 1 draw, 1 loss in 5 games
+ * calculateFormFromStats({ win: 3, draw: 1, lose: 1, played: 5 })
+ * // Returns: "WWWDL" (3 W's, 1 D, 1 L)
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Team with many games - limited to last 5
+ * calculateFormFromStats({ win: 20, draw: 10, lose: 8, played: 38 })
+ * // Returns: 5-character form string based on ratios
+ * ```
  */
 export function calculateFormFromStats(stats: {
   win: number
@@ -31,8 +50,28 @@ export function calculateFormFromStats(stats: {
 }
 
 /**
- * Process form string for display
- * API form is in reverse chronological order (newest first)
+ * Process and reverse API form string for chronological display
+ *
+ * The API returns form in reverse chronological order (newest first),
+ * but we want to display oldest→newest (left to right) for better UX.
+ * Also limits to last 5 results.
+ *
+ * @param form - Form string from API (e.g., "WDLWW" where W is most recent)
+ * @returns Array of form results in chronological order, limited to 5
+ *
+ * @example
+ * ```ts
+ * // API returns newest first: "WDLWW" (latest match is W)
+ * processFormString("WDLWW")
+ * // Returns: ['W', 'W', 'L', 'D', 'W'] (oldest to newest, left to right)
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Handles strings longer than 5
+ * processFormString("WWDLWDL") // 7 chars
+ * // Returns: ['W', 'L', 'D', 'W', 'W'] (last 5 after reversal)
+ * ```
  */
 export function processFormString(form: string): string[] {
   if (!form) return []

@@ -1,1 +1,5 @@
+# Run tests before committing
+pnpm vitest run
+
+# Run lint-staged for formatting and linting
 npx lint-staged

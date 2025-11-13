@@ -1,4 +1,5 @@
 import { cache } from 'react'
+import { z } from 'zod'
 import {
   APIResponse,
   Fixture,
@@ -6,6 +7,13 @@ import {
   StandingsResponse,
   FixtureStatistics,
 } from '@/types/api-football'
+import {
+  parseAPIResponse,
+  fixturesResponseSchema,
+  leaguesResponseSchema,
+  standingsArrayResponseSchema,
+  fixtureStatsResponseSchema,
+} from '@/lib/validation/api'
 
 const BASE_URL = process.env.API_FOOTBALL_BASE_URL || 'https://v3.football.api-sports.io'
 const API_KEY = process.env.NEXT_PUBLIC_API_FOOTBALL_KEY
@@ -21,7 +29,11 @@ export class APIFootballError extends Error {
   }
 }
 
-async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<APIResponse<T>> {
+async function fetchAPI<T>(
+  endpoint: string,
+  schema: z.ZodType<APIResponse<T>>,
+  options?: RequestInit
+): Promise<APIResponse<T>> {
   if (!API_KEY) {
     throw new APIFootballError('API key not configured', 500)
   }
@@ -42,11 +54,24 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<API
       throw new APIFootballError(`API request failed: ${response.statusText}`, response.status)
     }
 
-    const data: APIResponse<T> = await response.json()
+    const rawData = await response.json()
+
+    // Validate response with Zod schema
+    const data = parseAPIResponse(schema, rawData)
 
     // Check API response structure for errors
-    if (data.errors && Object.keys(data.errors).length > 0) {
-      throw new APIFootballError(`API Error: ${JSON.stringify(data.errors)}`, 400, data.errors)
+    if (data.errors) {
+      const hasErrors = Array.isArray(data.errors)
+        ? data.errors.length > 0
+        : Object.keys(data.errors).length > 0
+
+      if (hasErrors) {
+        throw new APIFootballError(
+          `API Error: ${JSON.stringify(data.errors)}`,
+          400,
+          Array.isArray(data.errors) ? {} : data.errors
+        )
+      }
     }
 
     return data
@@ -63,7 +88,7 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<API
 export const getLiveFixtures = cache(async (leagueId?: number): Promise<APIResponse<Fixture[]>> => {
   const endpoint = leagueId ? `/fixtures?live=all&league=${leagueId}` : '/fixtures?live=all'
 
-  return fetchAPI<Fixture[]>(endpoint, {
+  return fetchAPI<Fixture[]>(endpoint, fixturesResponseSchema, {
     next: { revalidate: 60 }, // ISR: 60 seconds
   })
 })
@@ -79,7 +104,7 @@ export const getFixturesByDate = cache(
       }
     }
 
-    return fetchAPI<Fixture[]>(endpoint, {
+    return fetchAPI<Fixture[]>(endpoint, fixturesResponseSchema, {
       next: { revalidate: 3600 }, // ISR: 1 hour for scheduled matches
     })
   }
@@ -89,35 +114,39 @@ export const getFixturesByRound = cache(
   async (leagueId: number, season: number, round: string): Promise<APIResponse<Fixture[]>> => {
     const endpoint = `/fixtures?league=${leagueId}&season=${season}&round=${encodeURIComponent(round)}`
 
-    return fetchAPI<Fixture[]>(endpoint, {
+    return fetchAPI<Fixture[]>(endpoint, fixturesResponseSchema, {
       next: { revalidate: 3600 }, // ISR: 1 hour for scheduled matches
     })
   }
 )
 
 export const getFixtureById = cache(async (fixtureId: number): Promise<APIResponse<Fixture[]>> => {
-  return fetchAPI<Fixture[]>(`/fixtures?id=${fixtureId}`, {
+  return fetchAPI<Fixture[]>(`/fixtures?id=${fixtureId}`, fixturesResponseSchema, {
     next: { revalidate: 60 },
   })
 })
 
 export const getLeagues = cache(async (): Promise<APIResponse<League[]>> => {
-  return fetchAPI('/leagues', {
+  return fetchAPI('/leagues', leaguesResponseSchema, {
     next: { revalidate: 86400 }, // ISR: 24 hours
   })
 })
 
 export const getStandings = cache(
   async (leagueId: number, season: number): Promise<APIResponse<StandingsResponse[]>> => {
-    return fetchAPI(`/standings?league=${leagueId}&season=${season}`, {
-      next: { revalidate: 3600 }, // ISR: 1 hour
-    })
+    return fetchAPI(
+      `/standings?league=${leagueId}&season=${season}`,
+      standingsArrayResponseSchema,
+      {
+        next: { revalidate: 3600 }, // ISR: 1 hour
+      }
+    )
   }
 )
 
 export const getFixtureStatistics = cache(
   async (fixtureId: number): Promise<APIResponse<FixtureStatistics[]>> => {
-    return fetchAPI(`/fixtures/statistics?fixture=${fixtureId}`, {
+    return fetchAPI(`/fixtures/statistics?fixture=${fixtureId}`, fixtureStatsResponseSchema, {
       next: { revalidate: 60 },
     })
   }
@@ -130,8 +159,12 @@ export const getFixturesByTeam = cache(
     leagueId: number,
     last: number = 10
   ): Promise<APIResponse<Fixture[]>> => {
-    return fetchAPI(`/fixtures?team=${teamId}&season=${season}&league=${leagueId}&last=${last}`, {
-      next: { revalidate: 3600 }, // ISR: 1 hour
-    })
+    return fetchAPI(
+      `/fixtures?team=${teamId}&season=${season}&league=${leagueId}&last=${last}`,
+      fixturesResponseSchema,
+      {
+        next: { revalidate: 3600 }, // ISR: 1 hour
+      }
+    )
   }
 )

@@ -4,7 +4,7 @@
 export interface APIResponse<T> {
   get: string
   parameters: Record<string, string | number | boolean>
-  errors: Record<string, string>
+  errors?: Record<string, string> | unknown[]
   results: number
   paging: {
     current: number
@@ -64,7 +64,7 @@ export interface Team {
   id: number
   name: string
   logo: string
-  winner: boolean | null
+  winner?: boolean | null
 }
 
 export interface League {
@@ -113,7 +113,7 @@ export interface Standing {
   group: string
   form: string
   status: string
-  description: string
+  description: string | null
   all: {
     played: number
     win: number

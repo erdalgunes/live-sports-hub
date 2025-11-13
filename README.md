@@ -4,15 +4,18 @@ Real-time soccer scores, fixtures, and league standings - POC
 
 ## 🚀 Tech Stack
 
-- **Framework:** Next.js 15 (App Router)
+- **Framework:** Next.js 16 (App Router, RSC)
 - **Language:** TypeScript (strict mode)
+- **Runtime:** React 19
 - **Package Manager:** pnpm
 - **Styling:** Tailwind CSS v4 (CSS-first, inline theming)
-- **UI Components:** shadcn/ui
-- **Database:** Supabase
+- **UI Components:** shadcn/ui with Radix UI
+- **Database:** Supabase (PostgreSQL)
 - **API:** API-Football (soccer data)
-- **State Management:** TanStack Query (React Query)
-- **Testing:** Vitest
+- **State Management:** TanStack Query v5 (React Query)
+- **Validation:** Zod (runtime type safety)
+- **Testing:** Vitest + React Testing Library + happy-dom
+- **Code Quality:** ESLint + Prettier + TypeScript strict + Husky
 - **Deployment:** Vercel
 
 ## 🏁 Getting Started
@@ -101,20 +104,26 @@ pnpm build
 # Start production server
 pnpm start
 
-# Run linter
-pnpm lint
+# Code quality
+pnpm lint              # Run ESLint
+pnpm lint:fix          # Fix linting issues automatically
+pnpm format            # Check code formatting
+pnpm format:write      # Format code with Prettier
+pnpm type-check        # TypeScript type checking
 
-# Fix linting issues
-pnpm lint:fix
+# Testing
+pnpm test              # Run tests in watch mode
+pnpm test:ui           # Run tests with Vitest UI
+pnpm test:coverage     # Run tests with coverage report
+pnpm test:ci           # Run tests for CI (with verbose output)
 
-# TypeScript type check
-pnpm type-check
+# Database
+pnpm db:reset          # Reset local Supabase database
+pnpm db:types          # Generate TypeScript types from database
 
-# Run tests
-pnpm test
-
-# Run tests with UI
-pnpm test:ui
+# Utilities
+pnpm clean             # Clean build artifacts and caches
+pnpm clean:install     # Full clean + reinstall dependencies
 ```
 
 ## 🌟 Features (POC)
@@ -130,40 +139,59 @@ pnpm test:ui
 
 ### Phase 1: Foundation ✅
 
-- [x] Project setup with Next.js 15
+- [x] Project setup with Next.js 16 + React 19
 - [x] Tailwind CSS v4 configuration
 - [x] shadcn/ui integration
 - [x] Core dependencies installed
+- [x] Husky + git hooks for code quality
 
-### Phase 2: Database & API
+### Phase 2: Database & API ✅
 
-- [ ] Supabase schema and migrations
-- [ ] API-Football client implementation
-- [ ] Type definitions for API responses
+- [x] Supabase schema and migrations
+- [x] API-Football client implementation
+- [x] Type definitions for API responses
+- [x] Zod validation for API responses
+- [x] Environment variable validation
 
-### Phase 3: Core Components
+### Phase 3: Core Components ✅
 
-- [ ] Match cards and listings
-- [ ] Live indicators
-- [ ] Loading states and skeletons
+- [x] Match cards and listings
+- [x] Live indicators
+- [x] Loading states and skeletons
+- [x] Standings tables with form indicators
+- [x] Season selectors
 
-### Phase 4: Pages
+### Phase 4: Pages ✅
 
-- [ ] Home page (live scores)
-- [ ] Fixtures page
-- [ ] Match detail page
+- [x] Home page (live scores with SSR)
+- [x] Fixtures page (with ISR caching)
+- [x] Match detail page
+- [x] Standings page with tabs
 
-### Phase 5: Real-time & Polish
+### Phase 5: Real-time & Polish ✅
 
-- [ ] React Query setup for polling
-- [ ] Optimizations and caching
-- [ ] Testing and documentation
+- [x] React Query v5 setup for polling
+- [x] Optimizations and caching strategies
+- [x] Testing infrastructure (Vitest)
+- [x] Utility function tests (98% coverage)
+- [x] JSDoc documentation for public APIs
+- [x] Structured logging system
 
-### Phase 6: Deployment
+### Phase 6: Developer Experience ✅
+
+- [x] Test coverage reporting with V8
+- [x] Coverage thresholds (70% minimum)
+- [x] Utility scripts for database management
+- [x] Clean and maintenance scripts
+- [x] Zod schemas for runtime validation
+- [x] Comprehensive JSDoc comments
+
+### Phase 7: Deployment (Next)
 
 - [ ] Vercel deployment
 - [ ] Environment variables configuration
 - [ ] Production testing
+- [ ] Performance monitoring
 
 ## 🔑 Key Considerations
 
