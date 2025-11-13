@@ -214,9 +214,12 @@ CREATE TRIGGER update_player_stats_on_event
 
 CREATE OR REPLACE FUNCTION cascade_match_status()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_status_live CONSTANT TEXT := 'live';
+  v_status_finished CONSTANT TEXT := 'finished';
 BEGIN
   -- When match finishes, update any dependent data
-  IF NEW.status = 'finished' AND OLD.status = 'live' THEN
+  IF NEW.status = v_status_finished AND OLD.status = v_status_live THEN
     -- Update H2H records
     INSERT INTO match_h2h (team1_id, team2_id, matches_played, team1_wins, team2_wins, draws)
     SELECT

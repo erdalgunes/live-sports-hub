@@ -113,6 +113,8 @@ RETURNS TABLE(
     next_run TIMESTAMPTZ,
     run_count BIGINT
 ) AS $$
+DECLARE
+    v_cache_jobs CONSTANT TEXT[] := ARRAY['cleanup-expired-cache', 'record-cache-snapshot', 'cleanup-old-monitoring'];
 BEGIN
     RETURN QUERY
     SELECT
@@ -135,11 +137,7 @@ BEGIN
             WHERE jobid = j.jobid
         ) as run_count
     FROM cron.job j
-    WHERE j.jobname IN (
-        'cleanup-expired-cache',
-        'record-cache-snapshot',
-        'cleanup-old-monitoring'
-    )
+    WHERE j.jobname = ANY(v_cache_jobs)
     ORDER BY j.jobname;
 END;
 $$ LANGUAGE plpgsql;
