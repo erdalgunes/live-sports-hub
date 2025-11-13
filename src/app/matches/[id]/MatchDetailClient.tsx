@@ -172,6 +172,7 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
         )}
       </div>
 
+      {/* sonar-disable-next-line typescript:S6747 */}
       <style jsx>{`
         .match-detail {
           max-width: 1200px;

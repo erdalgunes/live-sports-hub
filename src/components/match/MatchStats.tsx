@@ -74,6 +74,7 @@ function StatRow({
       {/* Away value */}
       <div className="stat-row__value stat-row__value--away">{formatValue(awayValue)}</div>
 
+      {/* sonar-disable-next-line typescript:S6747 */}
       <style jsx>{`
         .stat-row {
           display: grid;
@@ -168,7 +169,8 @@ export function MatchStats({
     return (
       <div className={`match-stats-empty ${className}`}>
         <p className="match-stats-empty__text">Statistics not available yet</p>
-        <style jsx>{`
+        {/* sonar-disable-next-line typescript:S6747 */}
+      <style jsx>{`
           .match-stats-empty {
             padding: 48px 24px;
             text-align: center;
@@ -273,6 +275,7 @@ export function MatchStats({
         />
       </div>
 
+      {/* sonar-disable-next-line typescript:S6747 */}
       <style jsx>{`
         .match-stats {
           background: var(--surface);

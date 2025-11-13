@@ -49,6 +49,7 @@ export function LiveIndicator({
         <span className="live-indicator__minute">{minute}'</span>
       )}
 
+      {/* sonar-disable-next-line typescript:S6747 */}
       <style jsx>{`
         .live-indicator {
           display: inline-flex;
@@ -150,6 +151,7 @@ export function LiveDot({
     >
       <span className={`live-dot__indicator ${animated ? 'live-dot__indicator--animated' : ''}`} />
 
+      {/* sonar-disable-next-line typescript:S6747 */}
       <style jsx>{`
         .live-dot {
           display: inline-flex;
@@ -212,6 +214,7 @@ export function LiveBadge({
     <output className={`live-badge ${className}`} aria-live="polite">
       <LiveIndicator showText={true} minute={minute} size="small" animated={true} />
 
+      {/* sonar-disable-next-line typescript:S6747 */}
       <style jsx>{`
         .live-badge {
           display: inline-block;
