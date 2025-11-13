@@ -15,7 +15,7 @@ export function Header() {
   const navItems = [
     { href: '/', label: 'Live Scores' },
     { href: '/fixtures', label: 'Schedules' },
-    { href: '/leagues', label: 'Leagues' },
+    { href: '/standings', label: 'Standings' },
   ]
 
   return (
