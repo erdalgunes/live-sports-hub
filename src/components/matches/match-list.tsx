@@ -1,6 +1,8 @@
 import { Fixture } from '@/types/api-football'
-import { MatchCard } from './match-card'
+import { CompactMatchRow } from './compact-match-row'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Card } from '@/components/ui/card'
+import Image from 'next/image'
 
 interface MatchListProps {
   fixtures: Fixture[]
@@ -31,11 +33,27 @@ export function MatchList({ fixtures, isLoading }: MatchListProps) {
     )
   }
 
+  // Get league info from first fixture
+  const leagueInfo = fixtures[0]?.league
+
   return (
-    <div className="space-y-4">
-      {fixtures.map((fixture) => (
-        <MatchCard key={fixture.fixture.id} fixture={fixture} />
-      ))}
-    </div>
+    <Card className="overflow-hidden">
+      {leagueInfo && (
+        <div className="flex items-center gap-3 px-6 py-4 border-b bg-muted/30">
+          <Image
+            src={leagueInfo.logo}
+            alt={leagueInfo.name}
+            width={24}
+            height={24}
+          />
+          <span className="font-medium">{leagueInfo.name}</span>
+        </div>
+      )}
+      <div className="divide-y">
+        {fixtures.map((fixture) => (
+          <CompactMatchRow key={fixture.fixture.id} fixture={fixture} />
+        ))}
+      </div>
+    </Card>
   )
 }
