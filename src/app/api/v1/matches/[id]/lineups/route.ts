@@ -2,7 +2,6 @@
 import { NextRequest } from 'next/server';
 import {
   apiSuccess,
-  apiNotFound,
   validatePathParams,
   withErrorHandling,
   getCacheHeaders,

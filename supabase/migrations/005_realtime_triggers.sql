@@ -50,9 +50,11 @@ CREATE TRIGGER on_match_status_change
 
 CREATE OR REPLACE FUNCTION update_match_minute()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_status_live CONSTANT TEXT := 'live';
 BEGIN
   -- Only update if match is live
-  IF NEW.status = 'live' THEN
+  IF NEW.status = v_status_live THEN
     -- Auto-increment minute if needed (can be overridden by explicit updates)
     IF NEW.minute IS NULL THEN
       NEW.minute = 0;
