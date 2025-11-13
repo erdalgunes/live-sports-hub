@@ -98,7 +98,7 @@ export async function getTeamFixturesFromCache(
     .eq('team_id', teamId)
     .eq('league_id', leagueId)
     .eq('season', season)
-    .single()
+    .maybeSingle()
 
   if (error || !data) return null
 
@@ -160,7 +160,7 @@ export async function isCacheStale(
     .eq('league_id', leagueId)
     .eq('season', season)
     .limit(1)
-    .single()
+    .maybeSingle()
 
   if (error || !data) return true // No cache = stale
 
