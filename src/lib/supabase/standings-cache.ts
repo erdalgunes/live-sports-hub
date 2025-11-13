@@ -187,12 +187,14 @@ export async function setTeamFixturesToCache(
   const ttlMs = calculateAdaptiveTTL(fixtures)
   const expiresAt = new Date(now.getTime() + ttlMs)
 
-  await supabase.from('team_fixtures_cache').upsert(
+  // Type assertion to work around Supabase type inference issues
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase.from('team_fixtures_cache') as any).upsert(
     {
       team_id: teamId,
       league_id: leagueId,
       season: season,
-      fixtures: fixtures as unknown as Json,
+      fixtures: fixtures,
       cached_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
       ttl_seconds: Math.floor(ttlMs / 1000),
