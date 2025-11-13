@@ -156,20 +156,9 @@ COMMENT ON FUNCTION get_cache_cron_status() IS
 -- ============================================================================
 -- Verification Queries
 -- ============================================================================
-/*
-  Example queries for monitoring and testing:
-
-  - List all cache cron jobs:
-    SELECT * FROM cache_cron_jobs;
-
-  - Get cron job status:
-    SELECT * FROM get_cache_cron_status();
-
-  - Manual execution for testing:
-    SELECT cleanup_expired_cache();
-    SELECT record_cache_snapshot();
-    SELECT cleanup_old_monitoring_data();
-*/
+-- Use cache_cron_jobs view to list all scheduled jobs
+-- Use get_cache_cron_status() function to get job execution history
+-- Test functions: cleanup_expired_cache(), record_cache_snapshot(), cleanup_old_monitoring_data()
 
 -- ============================================================================
 -- Notes

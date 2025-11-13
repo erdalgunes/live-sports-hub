@@ -139,9 +139,9 @@ export function LiveDot({
   animated = true,
   className = '',
 }: {
-  size?: 'small' | 'medium' | 'large';
-  animated?: boolean;
-  className?: string;
+  readonly size?: 'small' | 'medium' | 'large';
+  readonly animated?: boolean;
+  readonly className?: string;
 }) {
   return (
     <output
@@ -205,8 +205,8 @@ export function LiveBadge({
   minute,
   className = '',
 }: {
-  minute?: number | null;
-  className?: string;
+  readonly minute?: number | null;
+  readonly className?: string;
 }) {
   return (
     <output className={`live-badge ${className}`} aria-live="polite">
