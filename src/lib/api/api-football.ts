@@ -1,5 +1,11 @@
 import { cache } from 'react'
-import { APIResponse, Fixture } from '@/types/api-football'
+import {
+  APIResponse,
+  Fixture,
+  League,
+  StandingsResponse,
+  FixtureStatistics,
+} from '@/types/api-football'
 
 const BASE_URL = process.env.API_FOOTBALL_BASE_URL || 'https://v3.football.api-sports.io'
 const API_KEY = process.env.NEXT_PUBLIC_API_FOOTBALL_KEY
@@ -8,7 +14,7 @@ export class APIFootballError extends Error {
   constructor(
     message: string,
     public status: number,
-    public response?: any
+    public response?: Record<string, string>
   ) {
     super(message)
     this.name = 'APIFootballError'
@@ -95,14 +101,14 @@ export const getFixtureById = cache(async (fixtureId: number): Promise<APIRespon
   })
 })
 
-export const getLeagues = cache(async (): Promise<APIResponse<any[]>> => {
+export const getLeagues = cache(async (): Promise<APIResponse<League[]>> => {
   return fetchAPI('/leagues', {
     next: { revalidate: 86400 }, // ISR: 24 hours
   })
 })
 
 export const getStandings = cache(
-  async (leagueId: number, season: number): Promise<APIResponse<any[]>> => {
+  async (leagueId: number, season: number): Promise<APIResponse<StandingsResponse[]>> => {
     return fetchAPI(`/standings?league=${leagueId}&season=${season}`, {
       next: { revalidate: 3600 }, // ISR: 1 hour
     })
@@ -110,7 +116,7 @@ export const getStandings = cache(
 )
 
 export const getFixtureStatistics = cache(
-  async (fixtureId: number): Promise<APIResponse<any[]>> => {
+  async (fixtureId: number): Promise<APIResponse<FixtureStatistics[]>> => {
     return fetchAPI(`/fixtures/statistics?fixture=${fixtureId}`, {
       next: { revalidate: 60 },
     })
@@ -123,7 +129,7 @@ export const getFixturesByTeam = cache(
     season: number,
     leagueId: number,
     last: number = 10
-  ): Promise<APIResponse<any[]>> => {
+  ): Promise<APIResponse<Fixture[]>> => {
     return fetchAPI(`/fixtures?team=${teamId}&season=${season}&league=${leagueId}&last=${last}`, {
       next: { revalidate: 3600 }, // ISR: 1 hour
     })

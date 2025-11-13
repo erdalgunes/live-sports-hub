@@ -2,9 +2,16 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StandingsTable } from './standings-table'
+import type { Standing } from '@/types/api-football'
+
+// Extended Standing type to support custom form fields
+interface EnhancedStanding extends Standing {
+  homeForm?: string
+  awayForm?: string
+}
 
 interface StandingsTabsProps {
-  standings: any[]
+  standings: EnhancedStanding[]
 }
 
 export function StandingsTabs({ standings }: StandingsTabsProps) {

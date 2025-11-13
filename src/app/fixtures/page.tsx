@@ -9,6 +9,7 @@ import { ViewTabs } from '@/components/view-tabs'
 import { DatePicker } from '@/components/date-picker'
 import { DateQuickNav } from '@/components/date-quick-nav'
 import { getCurrentSeason } from '@/lib/utils/season'
+import type { Fixture } from '@/types/api-football'
 
 export const revalidate = 3600 // ISR: 1 hour
 
@@ -28,8 +29,8 @@ export default async function FixturesPage({ searchParams }: FixturesPageProps) 
   const selectedDateFormatted = format(selectedDate, DATE_FORMATS.API)
 
   // Fetch fixtures based on view type
-  let fixturesData: any[] = []
-  let roundFixturesData: any[] = []
+  let fixturesData: Fixture[] = []
+  let roundFixturesData: Fixture[] = []
   let error: string | null = null
 
   if (view === 'date') {
@@ -63,7 +64,7 @@ export default async function FixturesPage({ searchParams }: FixturesPageProps) 
       </div>
 
       <Tabs defaultValue={view} className="w-full">
-        <ViewTabs defaultValue={view} />
+        <ViewTabs />
 
         <TabsContent value="date" className="space-y-4">
           <div className="mb-6 flex flex-col items-center gap-4">

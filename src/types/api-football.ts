@@ -3,8 +3,8 @@
 
 export interface APIResponse<T> {
   get: string
-  parameters: Record<string, any>
-  errors: Record<string, any>
+  parameters: Record<string, string | number | boolean>
+  errors: Record<string, string>
   results: number
   paging: {
     current: number
@@ -145,6 +145,26 @@ export interface Standing {
     }
   }
   update: string
+}
+
+export interface StandingsResponse {
+  league: {
+    id: number
+    name: string
+    country: string
+    logo: string
+    flag: string
+    season: number
+    standings: Standing[][]
+  }
+}
+
+export interface FixtureStatistics {
+  team: Team
+  statistics: Array<{
+    type: string
+    value: string | number | null
+  }>
 }
 
 // Match status types

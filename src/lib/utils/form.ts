@@ -14,10 +14,6 @@ export function calculateFormFromStats(stats: {
   const total = stats.played
   if (total === 0) return ''
 
-  const winRatio = stats.win / total
-  const drawRatio = stats.draw / total
-  const loseRatio = stats.lose / total
-
   // Generate a form string weighted by the ratios
   let form = ''
   const formLength = Math.min(5, total)

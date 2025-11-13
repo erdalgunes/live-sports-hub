@@ -2,12 +2,13 @@ import { getLiveFixtures } from '@/lib/api/api-football'
 import { MatchList } from '@/components/matches/match-list'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { Fixture } from '@/types/api-football'
 
 export const revalidate = 60 // ISR: revalidate every 60 seconds
 
 export default async function HomePage() {
   // Server-side initial data
-  let fixtures: any[] = []
+  let fixtures: Fixture[] = []
   let error: string | null = null
 
   try {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStandings } from '@/lib/api/api-football'
 import { refreshTeamFixturesCache } from '@/lib/supabase/standings-cache'
+import type { Standing } from '@/types/api-football'
 
 /**
  * API route to refresh standings cache in the background
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract team IDs
-    const teamIds = standings.map((team: any) => team.team.id)
+    const teamIds = standings.map((team: Standing) => team.team.id)
 
     console.log(`[Cache Refresh] Found ${teamIds.length} teams to refresh`)
 

@@ -44,16 +44,19 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         hidden: 'invisible',
         ...classNames,
       }}
-      components={
-        {
-          Chevron: ({ ...props }) => {
-            if (props.orientation === 'left') {
-              return <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-            }
-            return <ChevronRight className="h-4 w-4" aria-hidden="true" />
-          },
-        } as any
-      }
+      components={{
+        Chevron: (props: {
+          className?: string
+          size?: number
+          disabled?: boolean
+          orientation?: 'left' | 'right' | 'up' | 'down'
+        }) => {
+          if (props.orientation === 'left') {
+            return <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+          }
+          return <ChevronRight className="h-4 w-4" aria-hidden="true" />
+        },
+      }}
       {...props}
     />
   )

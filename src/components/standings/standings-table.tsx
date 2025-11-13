@@ -3,20 +3,27 @@
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { processFormString } from '@/lib/utils/form'
+import type { Standing } from '@/types/api-football'
+
+// Extended Standing type to support custom form fields
+interface EnhancedStanding extends Standing {
+  homeForm?: string
+  awayForm?: string
+}
 
 interface StandingsTableProps {
-  standings: any[]
+  standings: EnhancedStanding[]
   type: 'all' | 'home' | 'away'
 }
 
 export function StandingsTable({ standings, type }: StandingsTableProps) {
-  const getStats = (team: any) => {
+  const getStats = (team: EnhancedStanding) => {
     if (type === 'home') return team.home
     if (type === 'away') return team.away
     return team.all
   }
 
-  const getForm = (team: any) => {
+  const getForm = (team: EnhancedStanding) => {
     if (type === 'home') {
       return processFormString(team.homeForm || '')
     }
@@ -149,7 +156,7 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
           </tr>
         </thead>
         <tbody>
-          {sortedStandings.map((team: any, index: number) => {
+          {sortedStandings.map((team: EnhancedStanding, index: number) => {
             const stats = getStats(team)
             const form = getForm(team)
             const currentPosition = index + 1

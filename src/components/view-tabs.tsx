@@ -1,13 +1,9 @@
 'use client'
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-interface ViewTabsProps {
-  defaultValue: string
-}
-
-export function ViewTabs({ defaultValue }: ViewTabsProps) {
+export function ViewTabs() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()

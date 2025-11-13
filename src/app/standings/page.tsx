@@ -8,6 +8,13 @@ import {
   calculateFormFromFixtures,
   isCacheStale,
 } from '@/lib/supabase/standings-cache'
+import type { Standing } from '@/types/api-football'
+
+// Extended Standing type with custom form properties
+interface EnhancedStanding extends Standing {
+  homeForm?: string
+  awayForm?: string
+}
 
 export const revalidate = 3600 // ISR: 1 hour
 
@@ -20,7 +27,7 @@ export default async function StandingsPage({ searchParams }: StandingsPageProps
   const season = parseInt(resolvedParams.season || String(getCurrentSeason()))
   const leagueId = 39 // Premier League
 
-  let standingsTable: any[] = []
+  let standingsTable: EnhancedStanding[] = []
   let error: string | null = null
 
   try {
@@ -32,7 +39,7 @@ export default async function StandingsPage({ searchParams }: StandingsPageProps
     const fixturesCache = await getAllTeamFixturesFromCache(leagueId, season)
 
     // Enhance standings with form data from cache
-    standingsTable = standingsTable.map((team: any) => {
+    standingsTable = standingsTable.map((team: Standing): EnhancedStanding => {
       const fixtures = fixturesCache.get(team.team.id)
 
       if (!fixtures || fixtures.length === 0) {
