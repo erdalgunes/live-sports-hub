@@ -1,6 +1,13 @@
 /**
  * Supabase-based caching for team fixtures data
- * Implements stale-while-revalidate strategy for standings form indicators
+ * Implements adaptive TTL strategy with stale-while-revalidate for cost optimization
+ *
+ * TTL Strategy:
+ * - Live matches: 60 seconds
+ * - Pre-match (<2h): 5 minutes
+ * - Pre-match (>2h): 1 hour
+ * - Finished matches: 24 hours
+ * - Default: 1 hour
  */
 
 import { createClient as createServerClient } from './server'
@@ -23,10 +30,57 @@ export interface TeamFixturesCache {
   fixtures: CachedFixture[]
   cached_at: string
   expires_at: string
+  ttl_seconds?: number
+  last_updated?: string
 }
 
-const CACHE_DURATION_MS = 3600000 // 1 hour
+// Adaptive TTL configuration based on match status and timing
+const TTL_CONFIG = {
+  LIVE: 60000, // 1 minute for live matches (1H, 2H, HT, ET, P, LIVE)
+  PRE_MATCH_SOON: 300000, // 5 minutes for matches starting within 2 hours
+  PRE_MATCH: 3600000, // 1 hour for upcoming matches
+  FINISHED: 86400000, // 24 hours for finished matches (FT, AET, PEN)
+  POSTPONED: 21600000, // 6 hours for postponed/cancelled (PST, CANC, ABD, SUSP)
+  DEFAULT: 3600000, // 1 hour default
+}
+
 const STALE_DURATION_MS = 7200000 // 2 hours (serve stale while revalidating)
+
+/**
+ * Calculate adaptive TTL based on fixture status and timing
+ */
+function calculateAdaptiveTTL(fixtures: CachedFixture[]): number {
+  if (!fixtures.length) return TTL_CONFIG.DEFAULT
+
+  // Check if any fixture is live
+  const hasLiveFixture = fixtures.some((f) =>
+    ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status)
+  )
+  if (hasLiveFixture) return TTL_CONFIG.LIVE
+
+  // Check if all fixtures are finished
+  const allFinished = fixtures.every((f) =>
+    ['FT', 'AET', 'PEN'].includes(f.status)
+  )
+  if (allFinished) return TTL_CONFIG.FINISHED
+
+  // Check if any fixture is postponed/cancelled
+  const hasPostponed = fixtures.some((f) =>
+    ['PST', 'CANC', 'ABD', 'SUSP'].includes(f.status)
+  )
+  if (hasPostponed) return TTL_CONFIG.POSTPONED
+
+  // Check if any upcoming fixture is within 2 hours
+  const now = Date.now()
+  const hasUpcomingSoon = fixtures.some((f) => {
+    const matchTime = new Date(f.date).getTime()
+    const timeUntilMatch = matchTime - now
+    return timeUntilMatch > 0 && timeUntilMatch <= 2 * 60 * 60 * 1000
+  })
+  if (hasUpcomingSoon) return TTL_CONFIG.PRE_MATCH_SOON
+
+  return TTL_CONFIG.DEFAULT
+}
 
 /**
  * Get cached fixtures for a team from Supabase
@@ -115,7 +169,7 @@ export async function isCacheStale(
 }
 
 /**
- * Save team fixtures to cache
+ * Save team fixtures to cache with adaptive TTL
  */
 export async function setTeamFixturesToCache(
   teamId: number,
@@ -126,7 +180,8 @@ export async function setTeamFixturesToCache(
   const supabase = await createServerClient()
 
   const now = new Date()
-  const expiresAt = new Date(now.getTime() + CACHE_DURATION_MS)
+  const ttlMs = calculateAdaptiveTTL(fixtures)
+  const expiresAt = new Date(now.getTime() + ttlMs)
 
   await supabase
     .from('team_fixtures_cache')
@@ -137,9 +192,63 @@ export async function setTeamFixturesToCache(
       fixtures: fixtures as any,
       cached_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
+      ttl_seconds: Math.floor(ttlMs / 1000),
+      last_updated: now.toISOString(),
     }, {
       onConflict: 'team_id,league_id,season'
     })
+}
+
+/**
+ * Get cache statistics for monitoring
+ */
+export async function getCacheStats(): Promise<{
+  totalFixtures: number
+  liveFixtures: number
+  expiredFixtures: number
+  cacheSizeMb: number
+  avgTtlSeconds: number
+} | null> {
+  const supabase = await createServerClient()
+
+  const { data, error } = await supabase.rpc('get_cache_stats')
+
+  if (error) {
+    console.error('[Cache Stats] Error fetching stats:', error)
+    return null
+  }
+
+  return {
+    totalFixtures: data.total_fixtures,
+    liveFixtures: data.live_fixtures,
+    expiredFixtures: data.expired_fixtures,
+    cacheSizeMb: data.cache_size_mb,
+    avgTtlSeconds: data.avg_ttl_seconds,
+  }
+}
+
+/**
+ * Manually trigger cache cleanup
+ */
+export async function triggerCacheCleanup(): Promise<{
+  deletedFixtures: number
+  deletedTeamFixtures: number
+  executionTimeMs: number
+} | null> {
+  const supabase = await createServerClient()
+
+  const { data, error } = await supabase.rpc('trigger_manual_cleanup')
+
+  if (error) {
+    console.error('[Cache Cleanup] Error triggering cleanup:', error)
+    return null
+  }
+
+  return {
+    deletedFixtures: data.deleted_fixtures,
+    deletedTeamFixtures: data.deleted_team_fixtures,
+    executionTimeMs: data.execution_time_ms,
+  }
 }
 
 /**
