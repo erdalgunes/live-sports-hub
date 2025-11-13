@@ -41,10 +41,10 @@ export const CACHE_TTL = {
 } as const;
 
 // Match status types for adaptive TTL
-const LIVE_STATUSES = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE', 'BT', 'INT'];
-const FINISHED_STATUSES = ['FT', 'AET', 'PEN'];
-const POSTPONED_STATUSES = ['PST', 'CANC', 'ABD', 'SUSP', 'AWD', 'WO'];
-const SCHEDULED_STATUSES = ['TBD', 'NS', 'SCHE'];
+const LIVE_STATUSES = new Set(['1H', '2H', 'HT', 'ET', 'P', 'LIVE', 'BT', 'INT']);
+const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN']);
+const POSTPONED_STATUSES = new Set(['PST', 'CANC', 'ABD', 'SUSP', 'AWD', 'WO']);
+const SCHEDULED_STATUSES = new Set(['TBD', 'NS', 'SCHE']);
 
 /**
  * Calculate adaptive TTL based on fixture data
@@ -83,7 +83,7 @@ function calculateAdaptiveTTL(endpoint: string, responseData: unknown): number {
   // Check for live fixtures (priority 1)
   const hasLiveFixture = fixtures.some((f) => {
     const status = f?.fixture?.status?.short || f?.status;
-    return status && LIVE_STATUSES.includes(status);
+    return status && LIVE_STATUSES.has(status);
   });
   if (hasLiveFixture) {
     console.log('[Cache] Live fixture detected - TTL: 60s');
@@ -93,7 +93,7 @@ function calculateAdaptiveTTL(endpoint: string, responseData: unknown): number {
   // Check if all fixtures are finished (priority 2)
   const allFinished = fixtures.every((f) => {
     const status = f?.fixture?.status?.short || f?.status;
-    return status && FINISHED_STATUSES.includes(status);
+    return status && FINISHED_STATUSES.has(status);
   });
   if (allFinished) {
     console.log('[Cache] All finished fixtures - TTL: 24h');
@@ -103,7 +103,7 @@ function calculateAdaptiveTTL(endpoint: string, responseData: unknown): number {
   // Check for postponed fixtures (priority 3)
   const hasPostponed = fixtures.some((f) => {
     const status = f?.fixture?.status?.short || f?.status;
-    return status && POSTPONED_STATUSES.includes(status);
+    return status && POSTPONED_STATUSES.has(status);
   });
   if (hasPostponed) {
     console.log('[Cache] Postponed fixture detected - TTL: 6h');
