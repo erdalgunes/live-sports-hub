@@ -1,8 +1,13 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { SeasonSelector } from '@/components/season-selector'
 import { getCurrentSeason } from '@/lib/utils/season'
-import { StandingsWrapper } from '@/components/standings/standings-wrapper'
+import { StandingsTabs } from '@/components/standings/standings-tabs'
 import { getStandings } from '@/lib/api/api-football'
+import {
+  getAllTeamFixturesFromCache,
+  calculateFormFromFixtures,
+  isCacheStale,
+} from '@/lib/supabase/standings-cache'
 
 export const revalidate = 3600 // ISR: 1 hour
 
@@ -19,9 +24,50 @@ export default async function StandingsPage({ searchParams }: StandingsPageProps
   let error: string | null = null
 
   try {
-    // Fetch basic standings data (no form enhancement)
+    // Fetch basic standings data
     const standingsData = await getStandings(leagueId, season)
     standingsTable = standingsData.response[0]?.league?.standings?.[0] || []
+
+    // Fetch cached fixtures from Supabase
+    const fixturesCache = await getAllTeamFixturesFromCache(leagueId, season)
+
+    // Enhance standings with form data from cache
+    standingsTable = standingsTable.map((team: any) => {
+      const fixtures = fixturesCache.get(team.team.id)
+
+      if (!fixtures || fixtures.length === 0) {
+        return {
+          ...team,
+          homeForm: '',
+          awayForm: '',
+        }
+      }
+
+      // Calculate form strings for home/away
+      const homeForm = calculateFormFromFixtures(fixtures, team.team.id, 'home')
+      const awayForm = calculateFormFromFixtures(fixtures, team.team.id, 'away')
+      const allForm = calculateFormFromFixtures(fixtures, team.team.id, 'all')
+
+      return {
+        ...team,
+        form: allForm || team.form || '', // Use cached form or fallback to API form
+        homeForm,
+        awayForm,
+      }
+    })
+
+    // Check if cache is stale and trigger background refresh (fire-and-forget)
+    const isStale = await isCacheStale(leagueId, season)
+    if (isStale && process.env.NEXT_PUBLIC_APP_URL) {
+      // Trigger background refresh without waiting
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/cache/refresh-standings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leagueId, season }),
+      }).catch((err) => {
+        console.error('Failed to trigger cache refresh:', err)
+      })
+    }
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to load standings'
     console.error('Error fetching standings:', e)
@@ -49,11 +95,7 @@ export default async function StandingsPage({ searchParams }: StandingsPageProps
       ) : (
         <Card>
           <CardContent className="p-4">
-            <StandingsWrapper
-              initialStandings={standingsTable}
-              leagueId={leagueId}
-              season={season}
-            />
+            <StandingsTabs standings={standingsTable} />
 
             {/* Legend */}
             <div className="mt-6 pt-4 border-t">
