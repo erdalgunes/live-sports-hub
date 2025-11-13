@@ -68,128 +68,158 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
     return 'bg-gray-300'
   }
 
+  const getTableCaption = () => {
+    if (type === 'home') return 'Premier League home form standings'
+    if (type === 'away') return 'Premier League away form standings'
+    return 'Premier League standings'
+  }
+
+  const getFormDescription = (form: string[]) => {
+    if (form.length === 0) return 'No recent form available'
+    const results = form.map(r => r === 'W' ? 'Win' : r === 'D' ? 'Draw' : 'Loss')
+    return `Last ${form.length} matches: ${results.join(', ')}`
+  }
+
   return (
-    <div className="w-full">
-      {/* Header */}
-      <div className="flex items-center px-3 py-3 border-b bg-muted/30">
-        <div className="w-10 text-center">
-          <span className="text-xs font-medium text-muted-foreground">#</span>
-        </div>
-        <div className="flex-1 pl-2">
-          <span className="text-xs font-medium text-muted-foreground">Team</span>
-        </div>
-        <div className="w-10 text-center">
-          <span className="text-xs font-medium text-muted-foreground">P</span>
-        </div>
-        <div className="w-10 text-center">
-          <span className="text-xs font-medium text-muted-foreground">W</span>
-        </div>
-        <div className="w-10 text-center">
-          <span className="text-xs font-medium text-muted-foreground">D</span>
-        </div>
-        <div className="w-10 text-center">
-          <span className="text-xs font-medium text-muted-foreground">L</span>
-        </div>
-        <div className="w-16 text-center hidden sm:block">
-          <span className="text-xs font-medium text-muted-foreground">DIFF</span>
-        </div>
-        <div className="w-16 text-center hidden md:block">
-          <span className="text-xs font-medium text-muted-foreground">Goals</span>
-        </div>
-        <div className="w-32 text-center hidden lg:block">
-          <span className="text-xs font-medium text-muted-foreground">Last 5</span>
-        </div>
-        <div className="w-12 text-center">
-          <span className="text-xs font-medium text-muted-foreground">PTS</span>
-        </div>
-      </div>
+    <div className="w-full overflow-x-auto">
+      <table className="w-full border-collapse">
+        <caption className="sr-only">{getTableCaption()}</caption>
+        <thead>
+          <tr className="border-b bg-muted/30">
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-10">
+              <abbr title="Position">#</abbr>
+            </th>
+            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-muted-foreground flex-1 pl-2">
+              Team
+            </th>
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-10">
+              <abbr title="Played">P</abbr>
+            </th>
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-10">
+              <abbr title="Won">W</abbr>
+            </th>
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-10">
+              <abbr title="Drawn">D</abbr>
+            </th>
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-10">
+              <abbr title="Lost">L</abbr>
+            </th>
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-16 hidden sm:table-cell">
+              <abbr title="Goal Difference">DIFF</abbr>
+            </th>
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-16 hidden md:table-cell">
+              Goals
+            </th>
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-32 hidden lg:table-cell">
+              Last 5
+            </th>
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-12">
+              <abbr title="Points">PTS</abbr>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedStandings.map((team: any, index: number) => {
+            const stats = getStats(team)
+            const form = getForm(team)
+            const currentPosition = index + 1
+            const overallRank = team.rank
 
-      {/* Rows */}
-      {sortedStandings.map((team: any, index: number) => {
-        const stats = getStats(team)
-        const form = getForm(team)
-        const currentPosition = index + 1 // Position in current sorted view
-        const overallRank = team.rank // Original overall rank for qualification colors
-
-        return (
-          <div
-            key={team.team.id}
-            className="flex items-center px-3 py-3 border-b hover:bg-muted/50 transition-colors group"
-          >
-            {/* Position - Shows current position, but color based on overall rank */}
-            <div className="w-10 flex items-center justify-center">
-              <div
-                className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold',
-                  getQualificationColor(overallRank) ? 'text-white' : 'text-foreground',
-                  getQualificationColor(overallRank)
-                )}
-                title={type !== 'all' ? `Overall position: ${overallRank}` : undefined}
+            return (
+              <tr
+                key={team.team.id}
+                className="border-b hover:bg-muted/50 transition-colors group"
               >
-                {currentPosition}
-              </div>
-            </div>
-
-            {/* Team */}
-            <div className="flex-1 flex items-center gap-2 pl-2 min-w-0">
-              <Image
-                src={team.team.logo}
-                alt={team.team.name}
-                width={28}
-                height={28}
-                className="flex-shrink-0"
-              />
-              <span className="font-medium truncate">{team.team.name}</span>
-            </div>
-
-            {/* Stats */}
-            <div className="w-10 text-center text-sm">{stats.played}</div>
-            <div className="w-10 text-center text-sm">{stats.win}</div>
-            <div className="w-10 text-center text-sm">{stats.draw}</div>
-            <div className="w-10 text-center text-sm">{stats.lose}</div>
-
-            {/* Goal Difference - Calculate based on stats for home/away */}
-            <div className="w-16 text-center text-sm font-medium hidden sm:block">
-              {(() => {
-                const diff = stats.goals.for - stats.goals.against
-                return `${diff > 0 ? '+' : ''}${diff}`
-              })()}
-            </div>
-
-            {/* Goals For:Against */}
-            <div className="w-16 text-center text-sm hidden md:block">
-              {stats.goals.for}:{stats.goals.against}
-            </div>
-
-            {/* Form (Last 5) - Display oldest to newest (left to right) */}
-            <div className="w-32 hidden lg:flex items-center justify-center gap-1">
-              {form.map((result: string, idx: number) => {
-                const isOldest = idx === 0
-                const isNewest = idx === form.length - 1
-                return (
+                {/* Position */}
+                <td className="px-3 py-3 text-center">
                   <div
-                    key={idx}
                     className={cn(
-                      'w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white transition-all',
-                      getFormColor(result),
-                      isOldest && 'rounded-l',
-                      isNewest && 'rounded-r'
+                      'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mx-auto',
+                      getQualificationColor(overallRank) ? 'text-white' : 'text-foreground',
+                      getQualificationColor(overallRank)
                     )}
-                    title={result === 'W' ? 'Win' : result === 'D' ? 'Draw' : 'Loss'}
+                    title={type !== 'all' ? `Overall position: ${overallRank}` : undefined}
+                    aria-label={`Position ${currentPosition}${type !== 'all' ? `, overall position ${overallRank}` : ''}`}
                   >
-                    {result}
+                    {currentPosition}
                   </div>
-                )
-              })}
-            </div>
+                </td>
 
-            {/* Points - Calculate based on stats for home/away */}
-            <div className="w-12 text-center text-sm font-bold">
-              {stats.win * 3 + stats.draw}
-            </div>
-          </div>
-        )
-      })}
+                {/* Team Name */}
+                <th scope="row" className="px-3 py-3 text-left">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Image
+                      src={team.team.logo}
+                      alt=""
+                      width={28}
+                      height={28}
+                      className="flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="font-medium truncate">{team.team.name}</span>
+                  </div>
+                </th>
+
+                {/* Stats */}
+                <td className="px-3 py-3 text-center text-sm">{stats.played}</td>
+                <td className="px-3 py-3 text-center text-sm">{stats.win}</td>
+                <td className="px-3 py-3 text-center text-sm">{stats.draw}</td>
+                <td className="px-3 py-3 text-center text-sm">{stats.lose}</td>
+
+                {/* Goal Difference */}
+                <td className="px-3 py-3 text-center text-sm font-medium hidden sm:table-cell">
+                  {(() => {
+                    const diff = stats.goals.for - stats.goals.against
+                    return `${diff > 0 ? '+' : ''}${diff}`
+                  })()}
+                </td>
+
+                {/* Goals For:Against */}
+                <td className="px-3 py-3 text-center text-sm hidden md:table-cell">
+                  <span aria-label={`${stats.goals.for} goals scored, ${stats.goals.against} goals conceded`}>
+                    {stats.goals.for}:{stats.goals.against}
+                  </span>
+                </td>
+
+                {/* Form (Last 5) */}
+                <td className="px-3 py-3 hidden lg:table-cell">
+                  <div
+                    className="flex items-center justify-center gap-1"
+                    role="list"
+                    aria-label={getFormDescription(form)}
+                  >
+                    {form.map((result: string, idx: number) => {
+                      const isOldest = idx === 0
+                      const isNewest = idx === form.length - 1
+                      return (
+                        <div
+                          key={idx}
+                          role="listitem"
+                          className={cn(
+                            'w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white transition-all',
+                            getFormColor(result),
+                            isOldest && 'rounded-l',
+                            isNewest && 'rounded-r'
+                          )}
+                          title={result === 'W' ? 'Win' : result === 'D' ? 'Draw' : 'Loss'}
+                          aria-label={result === 'W' ? 'Win' : result === 'D' ? 'Draw' : 'Loss'}
+                        >
+                          {result}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </td>
+
+                {/* Points */}
+                <td className="px-3 py-3 text-center text-sm font-bold">
+                  {stats.win * 3 + stats.draw}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
     </div>
   )
 }
