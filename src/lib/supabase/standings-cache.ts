@@ -157,7 +157,7 @@ export async function getAllTeamFixturesFromCache(
 export async function isCacheStale(leagueId: number, season: number): Promise<boolean> {
   const supabase = await createServerClient()
 
-  const { data, error} = (await supabase
+  const { data, error } = (await supabase
     .from('team_fixtures_cache')
     .select('expires_at')
     .eq('league_id', leagueId)
