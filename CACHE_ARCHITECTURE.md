@@ -246,11 +246,85 @@ DELETE /api/v1/admin/cache/monitoring
 - ✅ Cache size growth monitoring
 - ✅ Automatic 30-day retention
 
+### Cron Job Status (NEW! 🕐)
+
+```bash
+# Get status of all cache cron jobs
+GET /api/v1/admin/cache/cron
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "jobs": [
+      {
+        "job_name": "cleanup-expired-cache",
+        "schedule": "0 */6 * * *",
+        "is_active": true,
+        "last_run": "2025-01-13T06:00:00Z",
+        "next_run": "2025-01-13T12:00:00Z",
+        "run_count": 42
+      },
+      {
+        "job_name": "record-cache-snapshot",
+        "schedule": "0 * * * *",
+        "is_active": true,
+        "last_run": "2025-01-13T11:00:00Z",
+        "next_run": "2025-01-13T12:00:00Z",
+        "run_count": 168
+      }
+    ]
+  }
+}
+```
+
 ---
 
-## Automated Cleanup
+## Automated Cleanup & Monitoring
 
-### Option 1: Vercel Cron (Recommended for Vercel deployments)
+### Option 1: Supabase pg_cron (Recommended! ✅)
+
+**Setup:** The migration `008_pg_cron_setup.sql` automatically configures:
+
+**Scheduled Jobs:**
+1. **Cache Cleanup** (`cleanup-expired-cache`)
+   - Schedule: Every 6 hours (`0 */6 * * *`)
+   - Function: `cleanup_expired_cache()`
+   - Purpose: Remove expired cache entries
+
+2. **Monitoring Snapshots** (`record-cache-snapshot`)
+   - Schedule: Every hour (`0 * * * *`)
+   - Function: `record_cache_snapshot()`
+   - Purpose: Track cache performance trends
+
+3. **Monitoring Cleanup** (`cleanup-old-monitoring`)
+   - Schedule: Daily at midnight (`0 0 * * *`)
+   - Function: `cleanup_old_monitoring_data()`
+   - Purpose: Remove snapshots older than 30 days
+
+**Verification:**
+```sql
+-- Check all cache cron jobs
+SELECT * FROM cache_cron_jobs;
+
+-- Get detailed job status
+SELECT * FROM get_cache_cron_status();
+```
+
+**Manual Execution (for testing):**
+```sql
+-- Test cleanup
+SELECT cleanup_expired_cache();
+
+-- Test snapshot
+SELECT record_cache_snapshot();
+
+-- Test monitoring cleanup
+SELECT cleanup_old_monitoring_data();
+```
+
+### Option 2: Vercel Cron (Alternative for API endpoints)
 
 **File:** `vercel.json`
 ```json
@@ -259,36 +333,16 @@ DELETE /api/v1/admin/cache/monitoring
     {
       "path": "/api/v1/admin/cache/cleanup",
       "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/v1/admin/cache/monitoring",
+      "schedule": "0 * * * *"
     }
   ]
 }
 ```
-Runs every 6 hours.
 
-### Option 2: Supabase pg_cron
-
-```sql
--- Clean up expired cache entries every 6 hours
-SELECT cron.schedule(
-  'cleanup-cache',
-  '0 */6 * * *',
-  $$SELECT cleanup_expired_cache()$$
-);
-
--- Record cache monitoring snapshots every hour
-SELECT cron.schedule(
-  'cache-monitoring',
-  '0 * * * *',
-  $$SELECT record_cache_snapshot()$$
-);
-
--- Clean up old monitoring data daily
-SELECT cron.schedule(
-  'cleanup-monitoring',
-  '0 0 * * *',
-  $$SELECT cleanup_old_monitoring_data()$$
-);
-```
+**Note:** Supabase pg_cron (Option 1) is more efficient as it runs directly in the database without HTTP overhead.
 
 ---
 
@@ -330,16 +384,23 @@ await getFixturesByDate(today);
 
 ## Implementation Checklist
 
+### ✅ Core Features (Complete)
 - [x] Cache client with TTL support
 - [x] Database migration for cache table
 - [x] Service layer with type-safe wrappers
 - [x] Admin endpoints for cache management
 - [x] Database functions for cleanup
-- [x] Adaptive TTL calculation (PR #1 integration)
+
+### ✅ PR #1 Integration (Complete)
+- [x] Adaptive TTL calculation
 - [x] Cache monitoring table and API endpoints
-- [ ] Set up automated cleanup (cron)
+- [x] pg_cron automated cleanup setup
+
+### 🚧 Future Enhancements
 - [ ] Add cache monitoring dashboard UI
 - [ ] Implement cache warming strategy
+- [ ] Add cache invalidation webhooks
+- [ ] Implement distributed cache synchronization
 
 ---
 

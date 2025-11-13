@@ -789,6 +789,17 @@ export interface Database {
         Args: Record<string, never>
         Returns: number
       }
+      get_cache_cron_status: {
+        Args: Record<string, never>
+        Returns: {
+          job_name: string
+          schedule: string
+          is_active: boolean
+          last_run: string | null
+          next_run: string | null
+          run_count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
