@@ -311,11 +311,11 @@ async function fetchFromApiFootball<T>(
 
   // Build URL with params
   const url = new URL(endpoint, API_FOOTBALL_BASE_URL);
-  Object.entries(params).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== null) {
       url.searchParams.append(key, String(value));
     }
-  });
+  }
 
   console.log(`[API-Football] Fetching: ${url.toString()}`);
 

@@ -48,7 +48,7 @@ export async function GET(
     const teamId = Number.parseInt(id, 10);
 
     if (Number.isNaN(teamId)) {
-      throw new Error('Invalid team ID');
+      throw new TypeError('Invalid team ID');
     }
 
     // Parse query parameters
@@ -107,7 +107,7 @@ export async function GET(
       const recent: any[] = [];
       const upcoming: any[] = [];
 
-      allFixtures.forEach((fixture: any) => {
+      for (const fixture of allFixtures) {
         const matchTime = new Date(fixture.fixture.date).getTime();
         const status = fixture.fixture.status.short;
         const FINISHED_STATUSES = ['FT', 'AET', 'PEN'];
@@ -117,7 +117,7 @@ export async function GET(
         } else if (matchTime > now) {
           upcoming.push(fixture);
         }
-      });
+      }
 
       // Sort and limit
       recentFixtures = recent

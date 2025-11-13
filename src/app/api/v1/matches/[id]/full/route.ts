@@ -95,7 +95,7 @@ export async function GET(
     const fixtureId = Number.parseInt(id, 10);
 
     if (Number.isNaN(fixtureId)) {
-      throw new Error('Invalid match ID');
+      throw new TypeError('Invalid match ID');
     }
 
     // Fetch all data in parallel using Promise.allSettled
