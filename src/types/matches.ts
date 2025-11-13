@@ -210,6 +210,12 @@ export interface PlayerMatchStatsDetail extends PlayerMatchStats {
   player: Player;
 }
 
+// Player Match Statistics with player and team info
+export interface PlayerMatchStatsWithTeam extends PlayerMatchStats {
+  player: Player;
+  team: Team;
+}
+
 // Head-to-Head Statistics
 export interface MatchH2H {
   id: number;
@@ -313,4 +319,21 @@ export interface LiveMatchUpdate {
 export interface MatchEventPayload {
   match_id: number;
   event: MatchEventDetail;
+}
+
+// Graph Data Types
+export interface GraphPoint {
+  minute: number;
+  value: number;
+}
+
+export interface MatchGraph {
+  momentum: GraphPoint[];
+  last_updated: string;
+}
+
+export interface WinProbabilityGraph {
+  home_probability: GraphPoint[];
+  away_probability: GraphPoint[];
+  last_updated: string;
 }

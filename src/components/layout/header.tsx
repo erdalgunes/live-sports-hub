@@ -7,6 +7,7 @@ import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 import { APP_CONFIG } from '@/lib/constants'
+import { AuthStatus } from '@/components/auth/auth-status'
 
 export function Header() {
   const pathname = usePathname()
@@ -55,6 +56,8 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
+
+              <AuthStatus />
 
               <Button
                 variant="ghost"

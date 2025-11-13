@@ -9,6 +9,9 @@ import type {
   MatchLineupWithTeam,
   MatchH2H,
   MatchFilters,
+  PlayerMatchStatsWithTeam,
+  MatchGraph,
+  WinProbabilityGraph,
 } from '@/types/matches';
 import { getPaginationParams } from '@/lib/utils/api-response';
 
@@ -339,6 +342,37 @@ export async function getRecentH2HMatches(
   return (data as MatchDetail[]) || [];
 }
 
+/**
+ * Get head-to-head data for a match (stats and recent matches)
+ */
+export async function getMatchH2H(matchId: number): Promise<{
+  h2h: MatchH2H | null;
+  recent_matches: MatchDetail[];
+} | null> {
+  const supabase = await createClient();
+
+  // First get the match to find home and away team IDs
+  const match = await getMatchById(matchId);
+  if (!match) {
+    return null;
+  }
+
+  // Fetch H2H statistics
+  const h2hStats = await getH2HStats(match.home_team_id, match.away_team_id);
+
+  // Fetch recent H2H matches
+  const recentMatches = await getRecentH2HMatches(
+    match.home_team_id,
+    match.away_team_id,
+    10
+  );
+
+  return {
+    h2h: h2hStats,
+    recent_matches: recentMatches,
+  };
+}
+
 // =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
@@ -420,4 +454,142 @@ export async function getMatchesByDate(date: string): Promise<MatchDetail[]> {
   }
 
   return (data as MatchDetail[]) || [];
+}
+
+// =============================================================================
+// TOURNAMENT STANDINGS
+// =============================================================================
+
+/**
+ * Get tournament standings for a specific match context
+ * Returns standings focused on teams around the match participants
+ */
+export async function getEventStandings(
+  tournamentId: number,
+  seasonId: number,
+  type: 'total' | 'home' | 'away' = 'total',
+  homeTeamId?: number,
+  awayTeamId?: number
+): Promise<{
+  tournament: {
+    id: number;
+    name: string;
+    season: number;
+  };
+  type: string;
+  standings: any[];
+  lastUpdated: string;
+}> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/v1/tournament/${tournamentId}/season/${seasonId}/standings/${type}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch standings: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+
+  // If we have team IDs, filter standings to show teams around the match participants
+  if (homeTeamId && awayTeamId && data.standings) {
+    const homeTeamStanding = data.standings.find((s: any) => s.team.id === homeTeamId);
+    const awayTeamStanding = data.standings.find((s: any) => s.team.id === awayTeamId);
+
+    if (homeTeamStanding && awayTeamStanding) {
+      const homeRank = homeTeamStanding.rank;
+      const awayRank = awayTeamStanding.rank;
+
+      // Show teams from 3 positions above the higher ranked team to 3 positions below the lower ranked team
+      const minRank = Math.max(1, Math.min(homeRank, awayRank) - 3);
+      const maxRank = Math.min(data.standings.length, Math.max(homeRank, awayRank) + 3);
+
+      data.standings = data.standings.filter((standing: any) =>
+        standing.rank >= minRank && standing.rank <= maxRank
+      );
+    }
+  }
+
+  return data;
+}
+
+// =============================================================================
+// MATCH BEST PLAYERS
+// =============================================================================
+
+/**
+ * Get best performing players for a match
+ */
+export async function getMatchBestPlayers(matchId: number): Promise<PlayerMatchStatsWithTeam[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('player_match_stats')
+    .select(`
+      *,
+      player:players(*),
+      team:teams(*)
+    `)
+    .eq('match_id', matchId)
+    .order('rating', { ascending: false })
+    .limit(10);
+
+  if (error) {
+    throw new Error(`Failed to fetch match best players: ${error.message}`);
+  }
+
+  return (data as PlayerMatchStatsWithTeam[]) || [];
+}
+
+// =============================================================================
+// MATCH GRAPHS
+// =============================================================================
+
+/**
+ * Get match momentum graph data
+ */
+export async function getMatchGraph(matchId: number): Promise<MatchGraph | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('match_graphs')
+    .select('*')
+    .eq('match_id', matchId)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null; // Not found
+    }
+    throw new Error(`Failed to fetch match graph: ${error.message}`);
+  }
+
+  return data as MatchGraph;
+}
+
+/**
+ * Get match win probability graph data
+ */
+export async function getMatchWinProbability(matchId: number): Promise<WinProbabilityGraph | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('match_win_probability')
+    .select('*')
+    .eq('match_id', matchId)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null; // Not found
+    }
+    throw new Error(`Failed to fetch win probability graph: ${error.message}`);
+  }
+
+  return data as WinProbabilityGraph;
 }
