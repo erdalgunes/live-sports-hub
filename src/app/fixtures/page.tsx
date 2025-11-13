@@ -18,7 +18,7 @@ interface FixturesPageProps {
 
 export default async function FixturesPage({ searchParams }: FixturesPageProps) {
   const resolvedParams = await searchParams
-  const season = Number.parseInt(resolvedParams.season || String(getCurrentSeason(, 10)))
+  const season = Number.parseInt(resolvedParams.season || String(getCurrentSeason()), 10)
   const view = resolvedParams.view || 'date'
   const round = Number.parseInt(resolvedParams.round || '11', 10)
   const dateParam = resolvedParams.date

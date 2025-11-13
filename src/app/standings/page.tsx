@@ -17,7 +17,7 @@ interface StandingsPageProps {
 
 export default async function StandingsPage({ searchParams }: StandingsPageProps) {
   const resolvedParams = await searchParams
-  const season = Number.parseInt(resolvedParams.season || String(getCurrentSeason(, 10)))
+  const season = Number.parseInt(resolvedParams.season || String(getCurrentSeason()), 10)
   const leagueId = 39 // Premier League
 
   let standingsTable: any[] = []
