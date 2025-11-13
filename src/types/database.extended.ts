@@ -692,6 +692,56 @@ export interface Database {
           updated_at?: string
         }
       }
+      api_football_cache_monitoring: {
+        Row: {
+          id: number
+          snapshot_at: string
+          total_entries: number
+          valid_entries: number
+          expired_entries: number
+          total_hits: number
+          cache_size_mb: number
+          live_entries: number
+          finished_entries: number
+          upcoming_entries: number
+          top_endpoints: Json
+          avg_hit_count: number
+          cache_hit_rate: number
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          snapshot_at?: string
+          total_entries: number
+          valid_entries: number
+          expired_entries: number
+          total_hits: number
+          cache_size_mb: number
+          live_entries?: number
+          finished_entries?: number
+          upcoming_entries?: number
+          top_endpoints?: Json
+          avg_hit_count?: number
+          cache_hit_rate?: number
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          snapshot_at?: string
+          total_entries?: number
+          valid_entries?: number
+          expired_entries?: number
+          total_hits?: number
+          cache_size_mb?: number
+          live_entries?: number
+          finished_entries?: number
+          upcoming_entries?: number
+          top_endpoints?: Json
+          avg_hit_count?: number
+          cache_hit_rate?: number
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -714,6 +764,30 @@ export interface Database {
           total_hits: number
           cache_size_mb: number
         }[]
+      }
+      record_cache_snapshot: {
+        Args: Record<string, never>
+        Returns: void
+      }
+      get_cache_trends: {
+        Args: {
+          hours_back?: number
+        }
+        Returns: {
+          snapshot_at: string
+          total_entries: number
+          valid_entries: number
+          cache_size_mb: number
+          avg_hit_count: number
+          cache_hit_rate: number
+          live_entries: number
+          finished_entries: number
+          upcoming_entries: number
+        }[]
+      }
+      cleanup_old_monitoring_data: {
+        Args: Record<string, never>
+        Returns: number
       }
     }
     Enums: {

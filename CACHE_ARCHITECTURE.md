@@ -199,6 +199,53 @@ POST /api/v1/admin/cache/cleanup
 }
 ```
 
+### Cache Monitoring (NEW! 📊)
+
+```bash
+# Get cache performance trends (last 24 hours)
+GET /api/v1/admin/cache/monitoring
+
+# Get trends for custom time range (max 7 days)
+GET /api/v1/admin/cache/monitoring?hours=48
+
+# Manually record a snapshot
+POST /api/v1/admin/cache/monitoring
+
+# Clean up old monitoring data (>30 days)
+DELETE /api/v1/admin/cache/monitoring
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "timeRange": "24 hours",
+    "count": 24,
+    "snapshots": [
+      {
+        "snapshot_at": "2025-01-13T12:00:00Z",
+        "total_entries": 1234,
+        "valid_entries": 1178,
+        "cache_size_mb": 45.67,
+        "avg_hit_count": 12.34,
+        "cache_hit_rate": 85.5,
+        "live_entries": 45,
+        "finished_entries": 890,
+        "upcoming_entries": 243
+      }
+    ]
+  }
+}
+```
+
+**Monitoring Features:**
+- ✅ Historical cache performance tracking
+- ✅ TTL distribution analysis (live/finished/upcoming)
+- ✅ Top endpoints by cache count
+- ✅ Cache hit rate trends
+- ✅ Cache size growth monitoring
+- ✅ Automatic 30-day retention
+
 ---
 
 ## Automated Cleanup
@@ -221,10 +268,25 @@ Runs every 6 hours.
 ### Option 2: Supabase pg_cron
 
 ```sql
+-- Clean up expired cache entries every 6 hours
 SELECT cron.schedule(
   'cleanup-cache',
   '0 */6 * * *',
   $$SELECT cleanup_expired_cache()$$
+);
+
+-- Record cache monitoring snapshots every hour
+SELECT cron.schedule(
+  'cache-monitoring',
+  '0 * * * *',
+  $$SELECT record_cache_snapshot()$$
+);
+
+-- Clean up old monitoring data daily
+SELECT cron.schedule(
+  'cleanup-monitoring',
+  '0 0 * * *',
+  $$SELECT cleanup_old_monitoring_data()$$
 );
 ```
 
@@ -273,8 +335,10 @@ await getFixturesByDate(today);
 - [x] Service layer with type-safe wrappers
 - [x] Admin endpoints for cache management
 - [x] Database functions for cleanup
+- [x] Adaptive TTL calculation (PR #1 integration)
+- [x] Cache monitoring table and API endpoints
 - [ ] Set up automated cleanup (cron)
-- [ ] Add cache monitoring dashboard
+- [ ] Add cache monitoring dashboard UI
 - [ ] Implement cache warming strategy
 
 ---
