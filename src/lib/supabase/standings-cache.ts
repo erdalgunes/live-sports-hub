@@ -186,24 +186,12 @@ export async function setTeamFixturesToCache(
   const ttlMs = calculateAdaptiveTTL(fixtures)
   const expiresAt = new Date(now.getTime() + ttlMs)
 
-  // Type assertion to work around Supabase type inference issues
-  interface TeamFixturesCacheRow {
-    team_id: number
-    league_id: number
-    season: number
-    fixtures: unknown
-    cached_at: string
-    expires_at: string
-    ttl_seconds: number
-    last_updated: string
-  }
-
-  await supabase.from('team_fixtures_cache').upsert<TeamFixturesCacheRow>(
+  await supabase.from('team_fixtures_cache').upsert(
     {
       team_id: teamId,
       league_id: leagueId,
       season: season,
-      fixtures: fixtures as unknown,
+      fixtures: fixtures,
       cached_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
       ttl_seconds: Math.floor(ttlMs / 1000),
