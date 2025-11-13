@@ -17,8 +17,7 @@ CREATE INDEX idx_cached_fixtures_league_status_date
 ON cached_fixtures(league_id, status, match_date DESC);
 
 CREATE INDEX idx_cached_fixtures_status_expires
-ON cached_fixtures(status, expires_at)
-WHERE expires_at > NOW();
+ON cached_fixtures(status, expires_at);
 
 CREATE INDEX idx_team_fixtures_league_season_expires
 ON team_fixtures_cache(league_id, season, expires_at DESC);
