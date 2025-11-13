@@ -15,6 +15,7 @@
 import { createClient as createServerClient } from './server'
 import { getFixturesByTeam } from '@/lib/api/api-football'
 import type { Fixture } from '@/types/api-football'
+import type { Json } from '@/types/database'
 
 export interface CachedFixture {
   fixtureId: number
@@ -191,7 +192,7 @@ export async function setTeamFixturesToCache(
       team_id: teamId,
       league_id: leagueId,
       season: season,
-      fixtures: fixtures,
+      fixtures: fixtures as unknown as Json,
       cached_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
       ttl_seconds: Math.floor(ttlMs / 1000),
