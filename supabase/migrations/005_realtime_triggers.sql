@@ -3,6 +3,17 @@
 -- Created: 2025-01-13
 
 -- ============================================================================
+-- Constants Helper
+-- ============================================================================
+
+-- Helper function to get match status constants
+CREATE OR REPLACE FUNCTION get_match_status_live()
+RETURNS TEXT AS $$ SELECT 'live'::TEXT; $$ LANGUAGE SQL IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION get_match_status_finished()
+RETURNS TEXT AS $$ SELECT 'finished'::TEXT; $$ LANGUAGE SQL IMMUTABLE;
+
+-- ============================================================================
 -- Enable Realtime for Tables
 -- ============================================================================
 
@@ -51,7 +62,7 @@ CREATE TRIGGER on_match_status_change
 CREATE OR REPLACE FUNCTION update_match_minute()
 RETURNS TRIGGER AS $$
 DECLARE
-  v_status_live CONSTANT TEXT := 'live';
+  v_status_live CONSTANT TEXT := get_match_status_live();
 BEGIN
   -- Only update if match is live
   IF NEW.status = v_status_live THEN
@@ -81,8 +92,8 @@ CREATE OR REPLACE FUNCTION validate_match_event()
 RETURNS TRIGGER AS $$
 DECLARE
   match_status VARCHAR(50);
-  v_status_live CONSTANT TEXT := 'live';
-  v_status_finished CONSTANT TEXT := 'finished';
+  v_status_live CONSTANT TEXT := get_match_status_live();
+  v_status_finished CONSTANT TEXT := get_match_status_finished();
 BEGIN
   -- Get current match status
   SELECT status INTO match_status
@@ -217,8 +228,8 @@ CREATE TRIGGER update_player_stats_on_event
 CREATE OR REPLACE FUNCTION cascade_match_status()
 RETURNS TRIGGER AS $$
 DECLARE
-  v_status_live CONSTANT TEXT := 'live';
-  v_status_finished CONSTANT TEXT := 'finished';
+  v_status_live CONSTANT TEXT := get_match_status_live();
+  v_status_finished CONSTANT TEXT := get_match_status_finished();
 BEGIN
   -- When match finishes, update any dependent data
   IF NEW.status = v_status_finished AND OLD.status = v_status_live THEN
