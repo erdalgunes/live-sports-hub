@@ -135,11 +135,13 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
                   <div
                     className={cn(
                       'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mx-auto',
-                      getQualificationColor(overallRank) ? 'text-white' : 'text-foreground',
-                      getQualificationColor(overallRank)
+                      getQualificationColor(overallRank) || 'text-foreground',
+                      getQualificationColor(overallRank) && 'text-white'
                     )}
                     title={type !== 'all' ? `Overall position: ${overallRank}` : undefined}
-                    aria-label={`Position ${currentPosition}${type !== 'all' ? `, overall position ${overallRank}` : ''}`}
+                    aria-label={type !== 'all'
+                      ? `Position ${currentPosition}, overall position ${overallRank}`
+                      : `Position ${currentPosition}`}
                   >
                     {currentPosition}
                   </div>
@@ -170,7 +172,8 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
                 <td className="px-3 py-3 text-center text-sm font-medium hidden sm:table-cell">
                   {(() => {
                     const diff = stats.goals.for - stats.goals.against
-                    return `${diff > 0 ? '+' : ''}${diff}`
+                    const sign = diff > 0 ? '+' : ''
+                    return `${sign}${diff}`
                   })()}
                 </td>
 
@@ -183,32 +186,35 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
 
                 {/* Form (Last 5) */}
                 <td className="px-3 py-3 hidden lg:table-cell">
-                  <div
+                  <ul
                     className="flex items-center justify-center gap-1"
-                    role="list"
                     aria-label={getFormDescription(form)}
                   >
                     {form.map((result: string, idx: number) => {
                       const isOldest = idx === 0
                       const isNewest = idx === form.length - 1
+                      const getResultTitle = () => {
+                        if (result === 'W') return 'Win'
+                        if (result === 'D') return 'Draw'
+                        return 'Loss'
+                      }
                       return (
-                        <div
-                          key={idx}
-                          role="listitem"
+                        <li
+                          key={`${team.team.id}-form-${idx}`}
                           className={cn(
                             'w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white transition-all',
                             getFormColor(result),
                             isOldest && 'rounded-l',
                             isNewest && 'rounded-r'
                           )}
-                          title={result === 'W' ? 'Win' : result === 'D' ? 'Draw' : 'Loss'}
-                          aria-label={result === 'W' ? 'Win' : result === 'D' ? 'Draw' : 'Loss'}
+                          title={getResultTitle()}
+                          aria-label={getResultTitle()}
                         >
                           {result}
-                        </div>
+                        </li>
                       )
                     })}
-                  </div>
+                  </ul>
                 </td>
 
                 {/* Points */}

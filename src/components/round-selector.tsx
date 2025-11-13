@@ -38,7 +38,7 @@ export function RoundSelector({ defaultRound = 1 }: RoundSelectorProps) {
   }
 
   return (
-    <div className="flex items-center gap-2" role="group" aria-label="Round navigation">
+    <div className="flex items-center gap-2" aria-label="Round navigation">
       <Button
         variant="outline"
         size="icon"

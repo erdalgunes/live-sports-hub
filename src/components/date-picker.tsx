@@ -92,7 +92,6 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
       <PopoverContent
         className="w-auto p-0"
         align="start"
-        role="dialog"
         aria-label="Choose date"
       >
         <style jsx global>{`
@@ -134,9 +133,9 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
           }
         `}</style>
         <div>
-          <div className="sr-only" role="status" aria-live="polite">
+          <output className="sr-only" aria-live="polite">
             Use arrow keys to navigate dates. Press Enter to select. Days with matches are indicated.
-          </div>
+          </output>
           <Calendar
             mode="single"
             selected={date}

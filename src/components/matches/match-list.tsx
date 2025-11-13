@@ -14,7 +14,7 @@ export function MatchList({ fixtures, isLoading }: MatchListProps) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-32 w-full" />
+          <Skeleton key={`skeleton-${i}`} className="h-32 w-full" />
         ))}
       </div>
     )

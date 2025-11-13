@@ -28,9 +28,8 @@ export function CompactMatchRow({ fixture }: CompactMatchRowProps) {
   }
 
   return (
-    <div
+    <article
       className="flex items-center h-[72px] hover:bg-muted/50 rounded-sm transition-colors px-4 cursor-pointer"
-      role="article"
       aria-label={getMatchDescription()}
     >
       {/* Date and Status */}
@@ -104,6 +103,6 @@ export function CompactMatchRow({ fixture }: CompactMatchRowProps) {
       <div className="flex-shrink-0">
         <div className="w-6 h-6" />
       </div>
-    </div>
+    </article>
   )
 }

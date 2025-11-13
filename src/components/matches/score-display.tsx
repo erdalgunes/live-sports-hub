@@ -16,11 +16,10 @@ export function ScoreDisplay({
   const showScore = homeScore !== null && awayScore !== null
 
   return (
-    <div
+    <output
       className={cn('text-2xl font-bold tabular-nums', className)}
       aria-live="polite"
       aria-atomic="true"
-      role="status"
     >
       {showScore ? (
         <>
@@ -32,6 +31,6 @@ export function ScoreDisplay({
       ) : (
         <span className="text-sm text-muted-foreground">{status}</span>
       )}
-    </div>
+    </output>
   )
 }
