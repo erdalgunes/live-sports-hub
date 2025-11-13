@@ -105,7 +105,7 @@ export async function getTeamFixturesFromCache(
   if (error || !data) return null
 
   // Check if cache is completely expired (beyond stale threshold)
-  const expiresAt = new Date(data.expires_at).getTime()
+  const expiresAt = new Date((data as any).expires_at).getTime()
   const now = Date.now()
 
   if (now > expiresAt + STALE_DURATION_MS) {
@@ -166,7 +166,7 @@ export async function isCacheStale(
 
   if (error || !data) return true // No cache = stale
 
-  const expiresAt = new Date(data.expires_at).getTime()
+  const expiresAt = new Date((data as any).expires_at).getTime()
   return Date.now() > expiresAt
 }
 
