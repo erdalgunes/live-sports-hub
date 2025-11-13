@@ -2,7 +2,6 @@
 import { NextRequest } from 'next/server';
 import {
   apiSuccess,
-  apiNotFound,
   validatePathParams,
   withErrorHandling,
   getCacheHeaders,
@@ -21,7 +20,7 @@ export async function GET(
     // Validate path parameters
     const validation = validatePathParams(MatchIdParamSchema, { id: resolvedParams.id });
     if (!validation.success) {
-      return validation.response;
+      throw new Error('Invalid match ID');
     }
 
     const { id: matchId } = validation.data;
@@ -29,7 +28,7 @@ export async function GET(
     // Check if match exists
     const match = await getMatchById(matchId);
     if (!match) {
-      return apiNotFound('Match');
+      throw new Error('Match not found');
     }
 
     // Fetch match events

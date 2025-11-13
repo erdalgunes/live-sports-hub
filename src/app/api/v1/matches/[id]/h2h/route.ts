@@ -21,7 +21,7 @@ export async function GET(
     // Validate path parameters
     const validation = validatePathParams(MatchIdParamSchema, { id: resolvedParams.id });
     if (!validation.success) {
-      return validation.response;
+      throw new Error("Invalid parameters");
     }
 
     const { id: matchId } = validation.data;
@@ -29,7 +29,7 @@ export async function GET(
     // Get match details to find the teams
     const match = await getMatchById(matchId);
     if (!match) {
-      return apiNotFound('Match');
+      throw new Error("Resource not found");
     }
 
     // Fetch H2H statistics

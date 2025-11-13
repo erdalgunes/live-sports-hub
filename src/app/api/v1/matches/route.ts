@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     // Validate query parameters
     const validation = validateQueryParams(MatchFiltersSchema, params);
     if (!validation.success) {
-      return validation.response;
+      throw new Error("Invalid parameters");
     }
 
     const filters = validation.data;

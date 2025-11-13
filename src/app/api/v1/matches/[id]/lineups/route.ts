@@ -21,7 +21,7 @@ export async function GET(
     // Validate path parameters
     const validation = validatePathParams(MatchIdParamSchema, { id: resolvedParams.id });
     if (!validation.success) {
-      return validation.response;
+      throw new Error("Invalid parameters");
     }
 
     const { id: matchId } = validation.data;
@@ -29,14 +29,14 @@ export async function GET(
     // Check if match exists
     const match = await getMatchById(matchId);
     if (!match) {
-      return apiNotFound('Match');
+      throw new Error("Resource not found");
     }
 
     // Fetch match lineups
     const lineups = await getMatchLineups(matchId);
 
     if (!lineups || (!lineups.home && !lineups.away)) {
-      return apiNotFound('Match lineups');
+      throw new Error("Resource not found");
     }
 
     // Cache for longer since lineups don't change during match
