@@ -285,6 +285,37 @@ function decreaseDelay(currentDelay: number): number {
 }
 
 /**
+ * Process refresh result and update counters
+ */
+function handleRefreshResult(
+  result: { status: 'success' | 'failed' | 'skipped'; isRateLimit: boolean },
+  teamId: number,
+  counters: { success: number; failed: number; skipped: number; consecutiveRateLimitErrors: number },
+  delay: number
+): { shouldStop: boolean; newDelay: number } {
+  if (result.status === 'skipped') {
+    counters.skipped++
+    return { shouldStop: false, newDelay: delay }
+  }
+
+  if (result.status === 'success') {
+    counters.success++
+    counters.consecutiveRateLimitErrors = 0
+    return { shouldStop: false, newDelay: decreaseDelay(delay) }
+  }
+
+  // Handle failure
+  counters.failed++
+  if (!result.isRateLimit) {
+    return { shouldStop: false, newDelay: delay }
+  }
+
+  counters.consecutiveRateLimitErrors++
+  const { shouldStop, newDelay } = handleRateLimitError(teamId, counters.consecutiveRateLimitErrors)
+  return { shouldStop, newDelay }
+}
+
+/**
  * Refresh cache for all teams in a league/season
  * This should be called from a background job or API route
  * Uses adaptive delay: increases delay on rate limit errors
@@ -294,11 +325,8 @@ export async function refreshTeamFixturesCache(
   leagueId: number,
   season: number
 ): Promise<{ success: number; failed: number; skipped: number }> {
-  let success = 0
-  let failed = 0
-  let skipped = 0
+  const counters = { success: 0, failed: 0, skipped: 0, consecutiveRateLimitErrors: 0 }
   let delay = 2000
-  let consecutiveRateLimitErrors = 0
 
   for (let i = 0; i < teamIds.length; i++) {
     const teamId = teamIds[i]
@@ -308,28 +336,11 @@ export async function refreshTeamFixturesCache(
     }
 
     const result = await processTeamCacheRefresh(teamId, leagueId, season, i, teamIds.length)
+    const { shouldStop, newDelay } = handleRefreshResult(result, teamId, counters, delay)
 
-    if (result.status === 'skipped') {
-      skipped++
-      continue
-    }
-
-    if (result.status === 'success') {
-      success++
-      consecutiveRateLimitErrors = 0
-      delay = decreaseDelay(delay)
-      continue
-    }
-
-    // Handle failure
-    failed++
-    if (result.isRateLimit) {
-      consecutiveRateLimitErrors++
-      const { shouldStop, newDelay } = handleRateLimitError(teamId, consecutiveRateLimitErrors)
-      delay = newDelay
-      if (shouldStop) break
-    }
+    delay = newDelay
+    if (shouldStop) break
   }
 
-  return { success, failed, skipped }
+  return { success: counters.success, failed: counters.failed, skipped: counters.skipped }
 }
