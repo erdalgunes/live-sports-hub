@@ -251,6 +251,40 @@ function handleRateLimitError(
 }
 
 /**
+ * Process a single team cache refresh
+ */
+async function processTeamCacheRefresh(
+  teamId: number,
+  leagueId: number,
+  season: number,
+  index: number,
+  totalTeams: number
+): Promise<{ status: 'success' | 'failed' | 'skipped'; isRateLimit: boolean }> {
+  const shouldSkip = await shouldSkipCachedTeam(teamId, leagueId, season)
+  if (shouldSkip) {
+    return { status: 'skipped', isRateLimit: false }
+  }
+
+  try {
+    await fetchAndCacheTeamFixtures(teamId, leagueId, season, index, totalTeams)
+    return { status: 'success', isRateLimit: false }
+  } catch (error) {
+    const isRateLimit = error instanceof Error && error.message.includes('rateLimit')
+    if (!isRateLimit) {
+      console.error(`[Cache Refresh] Failed to refresh cache for team ${teamId}:`, error)
+    }
+    return { status: 'failed', isRateLimit }
+  }
+}
+
+/**
+ * Update delay after successful request
+ */
+function decreaseDelay(currentDelay: number): number {
+  return Math.max(2000, currentDelay - 200)
+}
+
+/**
  * Refresh cache for all teams in a league/season
  * This should be called from a background job or API route
  * Uses adaptive delay: increases delay on rate limit errors
@@ -273,31 +307,27 @@ export async function refreshTeamFixturesCache(
       await new Promise((resolve) => setTimeout(resolve, delay))
     }
 
-    const shouldSkip = await shouldSkipCachedTeam(teamId, leagueId, season)
-    if (shouldSkip) {
+    const result = await processTeamCacheRefresh(teamId, leagueId, season, i, teamIds.length)
+
+    if (result.status === 'skipped') {
       skipped++
       continue
     }
 
-    try {
-      await fetchAndCacheTeamFixtures(teamId, leagueId, season, i, teamIds.length)
+    if (result.status === 'success') {
       success++
       consecutiveRateLimitErrors = 0
-      delay = Math.max(2000, delay - 200)
-    } catch (error) {
-      const isRateLimit = error instanceof Error && error.message.includes('rateLimit')
+      delay = decreaseDelay(delay)
+      continue
+    }
 
-      if (isRateLimit) {
-        consecutiveRateLimitErrors++
-        const { shouldStop, newDelay } = handleRateLimitError(teamId, consecutiveRateLimitErrors)
-        delay = newDelay
-        failed++
-
-        if (shouldStop) break
-      } else {
-        console.error(`[Cache Refresh] Failed to refresh cache for team ${teamId}:`, error)
-        failed++
-      }
+    // Handle failure
+    failed++
+    if (result.isRateLimit) {
+      consecutiveRateLimitErrors++
+      const { shouldStop, newDelay } = handleRateLimitError(teamId, consecutiveRateLimitErrors)
+      delay = newDelay
+      if (shouldStop) break
     }
   }
 

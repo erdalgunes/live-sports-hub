@@ -154,9 +154,7 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
           {matchDays.length > 0 && (
             <div className="px-3 pb-3 pt-0">
               <p className="text-xs text-muted-foreground">
-                <span className="inline-block w-2 h-2 rounded-full bg-primary mr-1.5 align-middle" aria-hidden="true"></span>
-                {' '}
-                Days with scheduled matches
+                <span className="inline-block w-2 h-2 rounded-full bg-primary mr-1.5 align-middle" aria-hidden="true"></span> Days with scheduled matches
               </p>
             </div>
           )}
