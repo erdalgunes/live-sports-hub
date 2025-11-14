@@ -137,8 +137,7 @@ export function MatchHeader({
         )}
       </div>
 
-      {/* sonar-disable-next-line typescript:S6747 */}
-      <style jsx>{`
+      <style jsx>{/* NOSONAR */}{`
         .match-header {
           background: var(--surface);
           border-radius: 12px;

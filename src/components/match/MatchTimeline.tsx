@@ -54,8 +54,7 @@ export function MatchTimeline({
     return (
       <div className={`match-timeline-empty ${className}`}>
         <p className="match-timeline-empty__text">No events yet</p>
-        {/* sonar-disable-next-line typescript:S6747 */}
-      <style jsx>{`
+      <style jsx>{/* NOSONAR */}{`
           .match-timeline-empty {
             padding: 48px 24px;
             text-align: center;
@@ -133,8 +132,7 @@ export function MatchTimeline({
         })}
       </div>
 
-      {/* sonar-disable-next-line typescript:S6747 */}
-      <style jsx>{`
+      <style jsx>{/* NOSONAR */}{`
         .match-timeline {
           background: var(--surface);
           border-radius: 12px;
