@@ -421,3 +421,21 @@ export function validatePathParams<T extends z.ZodTypeAny>(
     data: result.data,
   };
 }
+
+/**
+ * Validate and extract match ID from Next.js 15 route params
+ * Handles awaiting params promise and validation in one step
+ */
+export async function validateMatchIdParams<T extends z.ZodTypeAny>(
+  schema: T,
+  params: Promise<{ id: string }>
+): Promise<z.infer<T>> {
+  const resolvedParams = await params;
+  const validation = validatePathParams(schema, { id: resolvedParams.id });
+
+  if (!validation.success) {
+    throw new Error('Invalid parameters');
+  }
+
+  return validation.data;
+}

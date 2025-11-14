@@ -2,7 +2,7 @@
 import { NextRequest } from 'next/server';
 import {
   apiSuccess,
-  validatePathParams,
+  validateMatchIdParams,
   withErrorHandling,
   getCacheHeaders,
 } from '@/lib/utils/api-response';
@@ -14,16 +14,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   return withErrorHandling(async () => {
-    // Await params as per Next.js 15 requirements
-    const resolvedParams = await params;
-
-    // Validate path parameters
-    const validation = validatePathParams(MatchIdParamSchema, { id: resolvedParams.id });
-    if (!validation.success) {
-      throw new Error("Invalid parameters");
-    }
-
-    const { id: matchId } = validation.data;
+    const { id: matchId } = await validateMatchIdParams(MatchIdParamSchema, params);
 
     // Get match details to find the teams
     const match = await getMatchById(matchId);
