@@ -220,7 +220,7 @@ function isCacheValid(expiresAt: string): boolean {
 async function fetchFromCache(
   endpoint: string,
   params: Record<string, unknown>
-): Promise<unknown | null> {
+): Promise<unknown> {
   try {
     const supabase = await createClient();
     const paramsHash = generateCacheKey(endpoint, params);
@@ -313,7 +313,8 @@ async function fetchFromApiFootball<T>(
   const url = new URL(endpoint, API_FOOTBALL_BASE_URL);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== null) {
-      url.searchParams.append(key, String(value));
+      const stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+      url.searchParams.append(key, stringValue);
     }
   }
 
@@ -379,12 +380,12 @@ export async function fetchWithCache<T>(
 
     // Calculate TTL: use provided TTL or adaptive calculation
     let finalTTL: number;
-    if (ttl !== undefined) {
-      finalTTL = ttl;
-      console.log(`[Cache] Using explicit TTL: ${ttl}s`);
-    } else {
+    if (ttl === undefined) {
       finalTTL = calculateAdaptiveTTL(endpoint, data);
       console.log(`[Cache] Using adaptive TTL: ${finalTTL}s`);
+    } else {
+      finalTTL = ttl;
+      console.log(`[Cache] Using explicit TTL: ${ttl}s`);
     }
 
     // Store in cache (don't await - fire and forget)

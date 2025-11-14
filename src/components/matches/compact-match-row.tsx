@@ -7,7 +7,7 @@ interface CompactMatchRowProps {
 }
 
 export function CompactMatchRow({ fixture }: CompactMatchRowProps) {
-  const { fixture: match, teams, goals, league } = fixture
+  const { fixture: match, teams, goals } = fixture
 
   const homeScore = goals.home ?? 0
   const awayScore = goals.away ?? 0

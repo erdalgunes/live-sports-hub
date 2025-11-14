@@ -76,7 +76,11 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
 
   const getFormDescription = (form: string[]) => {
     if (form.length === 0) return 'No recent form available'
-    const results = form.map(r => r === 'W' ? 'Win' : r === 'D' ? 'Draw' : 'Loss')
+    const results = form.map(r => {
+      if (r === 'W') return 'Win'
+      if (r === 'D') return 'Draw'
+      return 'Loss'
+    })
     return `Last ${form.length} matches: ${results.join(', ')}`
   }
 
@@ -138,10 +142,10 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
                       getQualificationColor(overallRank) || 'text-foreground',
                       getQualificationColor(overallRank) && 'text-white'
                     )}
-                    title={type !== 'all' ? `Overall position: ${overallRank}` : undefined}
-                    aria-label={type !== 'all'
-                      ? `Position ${currentPosition}, overall position ${overallRank}`
-                      : `Position ${currentPosition}`}
+                    title={type === 'all' ? undefined : `Overall position: ${overallRank}`}
+                    aria-label={type === 'all'
+                      ? `Position ${currentPosition}`
+                      : `Position ${currentPosition}, overall position ${overallRank}`}
                   >
                     {currentPosition}
                   </div>

@@ -52,6 +52,7 @@ export async function generateMetadata({ params }: MatchDetailPageProps): Promis
       },
     };
   } catch (error) {
+    console.error('Error generating metadata for match:', error);
     return { title: 'Match Not Found' };
   }
 }

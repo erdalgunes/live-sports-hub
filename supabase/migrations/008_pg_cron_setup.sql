@@ -182,6 +182,6 @@ COMMENT ON FUNCTION get_cache_cron_status() IS
 -- Troubleshooting:
 -- If jobs are not running, check:
 -- 1. pg_cron extension is enabled
--- 2. Jobs are active: SELECT * FROM cache_cron_jobs;
--- 3. Check job run history: SELECT * FROM cron.job_run_details ORDER BY start_time DESC;
+-- 2. Jobs are active in the cache_cron_jobs table
+-- 3. Job run history in cron.job_run_details table (ordered by start_time)
 -- 4. Check database logs for errors

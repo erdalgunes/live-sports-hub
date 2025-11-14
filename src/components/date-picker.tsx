@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
+import { format, startOfMonth } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import type { Matcher } from 'react-day-picker'
 
 interface DatePickerProps {
   defaultDate?: Date
@@ -41,8 +40,6 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
     const fetchMatchDays = async () => {
       try {
         const start = startOfMonth(currentMonth)
-        const end = endOfMonth(currentMonth)
-        const days = eachDayOfInterval({ start, end })
 
         // Fetch fixtures for the month
         const response = await fetch(
@@ -158,6 +155,7 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
             <div className="px-3 pb-3 pt-0">
               <p className="text-xs text-muted-foreground">
                 <span className="inline-block w-2 h-2 rounded-full bg-primary mr-1.5 align-middle" aria-hidden="true"></span>
+                {' '}
                 Days with scheduled matches
               </p>
             </div>

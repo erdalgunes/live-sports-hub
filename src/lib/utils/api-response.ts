@@ -392,6 +392,7 @@ export async function validateRequestBody<T extends z.ZodTypeAny>(
       data: result.data,
     };
   } catch (error) {
+    console.error('Error parsing request body:', error);
     return {
       success: false,
       response: apiBadRequest('Invalid JSON body'),
