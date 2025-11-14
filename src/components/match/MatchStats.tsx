@@ -17,6 +17,7 @@
 
 import React from 'react';
 import type { MatchStats as MatchStatsType } from '@/types/matches';
+import { cn } from '@/lib/utils';
 
 interface MatchStatsProps {
   readonly homeStats: MatchStatsType | null;
@@ -52,107 +53,33 @@ function StatRow({
   };
 
   return (
-    <div className="stat-row">
+    <div className="grid grid-cols-[60px_1fr_60px] gap-3 items-center mb-4 last:mb-0 sm:grid-cols-[50px_1fr_50px] sm:gap-2">
       {/* Home value */}
-      <div className="stat-row__value stat-row__value--home">{formatValue(homeValue)}</div>
+      <div className="text-sm font-semibold text-foreground text-right sm:text-xs">
+        {formatValue(homeValue)}
+      </div>
 
       {/* Bar visualization */}
-      <div className="stat-row__bar">
-        <div className="stat-row__bar-container">
+      <div className="relative">
+        <div className="flex h-6 bg-muted rounded overflow-hidden">
           <div
-            className="stat-row__bar-fill stat-row__bar-fill--home"
+            className="bg-blue-500 transition-all duration-300"
             style={{ width: `${homePercent}%` }}
           />
           <div
-            className="stat-row__bar-fill stat-row__bar-fill--away"
+            className="bg-red-500 transition-all duration-300"
             style={{ width: `${awayPercent}%` }}
           />
         </div>
-        <div className="stat-row__label">{label}</div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-semibold text-foreground whitespace-nowrap pointer-events-none [text-shadow:0_0_4px_var(--color-card)] sm:text-[11px]">
+          {label}
+        </div>
       </div>
 
       {/* Away value */}
-      <div className="stat-row__value stat-row__value--away">{formatValue(awayValue)}</div>
-
-      <style jsx>{`
-        .stat-row {
-          display: grid;
-          grid-template-columns: 60px 1fr 60px;
-          gap: 12px;
-          align-items: center;
-          margin-bottom: 16px;
-        }
-
-        .stat-row:last-child {
-          margin-bottom: 0;
-        }
-
-        .stat-row__value {
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--text-primary);
-        }
-
-        .stat-row__value--home {
-          text-align: right;
-        }
-
-        .stat-row__value--away {
-          text-align: left;
-        }
-
-        .stat-row__bar {
-          position: relative;
-        }
-
-        .stat-row__bar-container {
-          display: flex;
-          height: 24px;
-          background: var(--surface-alt);
-          border-radius: 4px;
-          overflow: hidden;
-        }
-
-        .stat-row__bar-fill {
-          transition: width 0.3s ease;
-        }
-
-        .stat-row__bar-fill--home {
-          background: var(--home-color);
-        }
-
-        .stat-row__bar-fill--away {
-          background: var(--away-color);
-        }
-
-        .stat-row__label {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--text-primary);
-          white-space: nowrap;
-          pointer-events: none;
-          text-shadow: 0 0 4px var(--surface);
-        }
-
-        @media (max-width: 640px) {
-          .stat-row {
-            grid-template-columns: 50px 1fr 50px;
-            gap: 8px;
-          }
-
-          .stat-row__value {
-            font-size: 13px;
-          }
-
-          .stat-row__label {
-            font-size: 11px;
-          }
-        }
-      `}</style>
+      <div className="text-sm font-semibold text-foreground text-left sm:text-xs">
+        {formatValue(awayValue)}
+      </div>
     </div>
   );
 }
@@ -166,32 +93,29 @@ export function MatchStats({
 }: MatchStatsProps) {
   if (!homeStats || !awayStats) {
     return (
-      <div className={`match-stats-empty ${className}`}>
-        <p className="match-stats-empty__text">Statistics not available yet</p>
-        <style jsx>{`
-          .match-stats-empty {
-            padding: 48px 24px;
-            text-align: center;
-            color: var(--text-secondary);
-            background: var(--surface);
-            border-radius: 12px;
-          }
-        `}</style>
+      <div className={cn('p-12 text-center text-muted-foreground bg-card rounded-xl', className)}>
+        <p>Statistics not available yet</p>
       </div>
     );
   }
 
   return (
-    <div className={`match-stats ${className}`}>
+    <div className={cn('bg-card rounded-xl p-6 shadow-md sm:p-4', className)}>
       {/* Team Headers */}
-      <div className="match-stats__header">
-        <div className="match-stats__team match-stats__team--home">{homeTeamName}</div>
-        <div className="match-stats__title">Match Statistics</div>
-        <div className="match-stats__team match-stats__team--away">{awayTeamName}</div>
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center mb-6 pb-4 border-b border-border sm:grid-cols-1 sm:text-center">
+        <div className="text-sm font-semibold text-muted-foreground text-right sm:text-center">
+          {homeTeamName}
+        </div>
+        <div className="text-lg font-bold text-foreground text-center sm:text-base">
+          Match Statistics
+        </div>
+        <div className="text-sm font-semibold text-muted-foreground text-left sm:text-center">
+          {awayTeamName}
+        </div>
       </div>
 
       {/* Stats Rows */}
-      <div className="match-stats__rows">
+      <div className="flex flex-col">
         <StatRow
           label="Possession"
           homeValue={homeStats.possession ?? 50}
@@ -272,70 +196,6 @@ export function MatchStats({
           isPercentage
         />
       </div>
-
-      <style jsx>{`
-        .match-stats {
-          background: var(--surface);
-          border-radius: 12px;
-          padding: 24px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .match-stats__header {
-          display: grid;
-          grid-template-columns: 1fr auto 1fr;
-          gap: 16px;
-          align-items: center;
-          margin-bottom: 24px;
-          padding-bottom: 16px;
-          border-bottom: 1px solid var(--border);
-        }
-
-        .match-stats__title {
-          font-size: 18px;
-          font-weight: 700;
-          color: var(--text-primary);
-          text-align: center;
-        }
-
-        .match-stats__team {
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--text-secondary);
-        }
-
-        .match-stats__team--home {
-          text-align: right;
-        }
-
-        .match-stats__team--away {
-          text-align: left;
-        }
-
-        .match-stats__rows {
-          display: flex;
-          flex-direction: column;
-        }
-
-        @media (max-width: 640px) {
-          .match-stats {
-            padding: 16px;
-          }
-
-          .match-stats__header {
-            grid-template-columns: 1fr;
-            text-align: center;
-          }
-
-          .match-stats__team {
-            text-align: center !important;
-          }
-
-          .match-stats__title {
-            font-size: 16px;
-          }
-        }
-      `}</style>
     </div>
   );
 }

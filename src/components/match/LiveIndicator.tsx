@@ -16,6 +16,7 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface LiveIndicatorProps {
   /** Show the text "LIVE" next to the indicator */
@@ -30,6 +31,18 @@ interface LiveIndicatorProps {
   readonly animated?: boolean;
 }
 
+const sizeClasses = {
+  small: 'text-[10px] px-1.5 py-0.5 gap-1',
+  medium: 'text-xs px-2.5 py-1 gap-1.5',
+  large: 'text-sm px-3 py-1.5 gap-2',
+} as const;
+
+const dotSizeClasses = {
+  small: 'w-1 h-1',
+  medium: 'w-1.5 h-1.5',
+  large: 'w-2 h-2',
+} as const;
+
 export function LiveIndicator({
   showText = true,
   minute,
@@ -39,94 +52,25 @@ export function LiveIndicator({
 }: LiveIndicatorProps) {
   return (
     <output
-      className={`live-indicator live-indicator--${size} ${className}`}
+      className={cn(
+        'inline-flex items-center bg-red-600/10 text-red-600 rounded-2xl font-semibold uppercase',
+        sizeClasses[size],
+        className
+      )}
       aria-live="polite"
       aria-label={minute ? `Live match, minute ${minute}` : 'Live match'}
     >
-      <span className={`live-indicator__dot ${animated ? 'live-indicator__dot--animated' : ''}`} />
-      {showText && <span className="live-indicator__text">LIVE</span>}
+      <span
+        className={cn(
+          'inline-block bg-red-600 rounded-full',
+          dotSizeClasses[size],
+          animated && 'animate-[pulse-live_2s_ease-in-out_infinite]'
+        )}
+      />
+      {showText && <span className="leading-none">LIVE</span>}
       {minute !== null && minute !== undefined && (
-        <span className="live-indicator__minute">{minute}&apos;</span>
+        <span className="ml-0.5 font-bold leading-none">{minute}&apos;</span>
       )}
-
-      <style jsx>{`
-        .live-indicator {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: var(--live-bg, rgba(220, 38, 38, 0.1));
-          color: var(--live-text, #dc2626);
-          padding: 4px 10px;
-          border-radius: 16px;
-          font-weight: 600;
-          text-transform: uppercase;
-        }
-
-        .live-indicator--small {
-          font-size: 10px;
-          padding: 2px 6px;
-          gap: 4px;
-        }
-
-        .live-indicator--medium {
-          font-size: 12px;
-          padding: 4px 10px;
-          gap: 6px;
-        }
-
-        .live-indicator--large {
-          font-size: 14px;
-          padding: 6px 12px;
-          gap: 8px;
-        }
-
-        .live-indicator__dot {
-          display: inline-block;
-          background: var(--live-text, #dc2626);
-          border-radius: 50%;
-        }
-
-        .live-indicator--small .live-indicator__dot {
-          width: 4px;
-          height: 4px;
-        }
-
-        .live-indicator--medium .live-indicator__dot {
-          width: 6px;
-          height: 6px;
-        }
-
-        .live-indicator--large .live-indicator__dot {
-          width: 8px;
-          height: 8px;
-        }
-
-        .live-indicator__dot--animated {
-          animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-          0%,
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.5;
-            transform: scale(0.9);
-          }
-        }
-
-        .live-indicator__text {
-          line-height: 1;
-        }
-
-        .live-indicator__minute {
-          margin-left: 2px;
-          font-weight: 700;
-          line-height: 1;
-        }
-      `}</style>
     </output>
   );
 }
@@ -143,57 +87,24 @@ export function LiveDot({
   readonly animated?: boolean;
   readonly className?: string;
 }) {
+  const liveDotSizeClasses = {
+    small: 'w-1.5 h-1.5',
+    medium: 'w-2 h-2',
+    large: 'w-2.5 h-2.5',
+  } as const;
+
   return (
     <output
-      className={`live-dot live-dot--${size} ${className}`}
+      className={cn('inline-flex items-center justify-center', className)}
       aria-label="Live"
     >
-      <span className={`live-dot__indicator ${animated ? 'live-dot__indicator--animated' : ''}`} />
-
-      <style jsx>{`
-        .live-dot {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .live-dot__indicator {
-          display: inline-block;
-          background: var(--live-text, #dc2626);
-          border-radius: 50%;
-        }
-
-        .live-dot--small .live-dot__indicator {
-          width: 6px;
-          height: 6px;
-        }
-
-        .live-dot--medium .live-dot__indicator {
-          width: 8px;
-          height: 8px;
-        }
-
-        .live-dot--large .live-dot__indicator {
-          width: 10px;
-          height: 10px;
-        }
-
-        .live-dot__indicator--animated {
-          animation: pulse-dot 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-dot {
-          0%,
-          100% {
-            opacity: 1;
-            box-shadow: 0 0 0 0 var(--live-text, #dc2626);
-          }
-          50% {
-            opacity: 0.7;
-            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0);
-          }
-        }
-      `}</style>
+      <span
+        className={cn(
+          'inline-block bg-red-600 rounded-full',
+          liveDotSizeClasses[size],
+          animated && 'animate-[pulse-dot_2s_ease-in-out_infinite]'
+        )}
+      />
     </output>
   );
 }
@@ -209,14 +120,8 @@ export function LiveBadge({
   readonly className?: string;
 }) {
   return (
-    <output className={`live-badge ${className}`} aria-live="polite">
+    <output className={cn('inline-block', className)} aria-live="polite">
       <LiveIndicator showText={true} minute={minute} size="small" animated={true} />
-
-      <style jsx>{`
-        .live-badge {
-          display: inline-block;
-        }
-      `}</style>
     </output>
   );
 }

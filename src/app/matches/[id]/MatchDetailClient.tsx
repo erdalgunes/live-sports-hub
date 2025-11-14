@@ -11,6 +11,7 @@ import React, { useState } from 'react';
 import { useMatchLive, useMatchEvents, useMatchStats } from '@/hooks';
 import { MatchHeader, MatchTimeline, MatchStats } from '@/components/match';
 import type { MatchDetail } from '@/types/matches';
+import { cn } from '@/lib/utils';
 
 interface MatchDetailClientProps {
   readonly initialMatch: MatchDetail;
@@ -37,13 +38,13 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
   ];
 
   return (
-    <div className="match-detail">
+    <div className="max-w-[1200px] mx-auto p-6 md:p-4">
       {/* Match Header */}
-      <div className="match-detail__header">
+      <div className="mb-6">
         <MatchHeader match={match} showLiveIndicator={true} />
         {isSubscribed && match.status === 'live' && (
-          <div className="match-detail__realtime-status">
-            <span className="match-detail__realtime-indicator" />
+          <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-green-600/10 text-green-600 rounded-lg text-xs font-medium">
+            <span className="inline-block w-2 h-2 bg-green-600 rounded-full animate-pulse" />
             {' '}
             Real-time updates active
           </div>
@@ -51,17 +52,21 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
       </div>
 
       {/* Tab Navigation */}
-      <div className="match-detail__tabs">
-        <div className="match-detail__tabs-list" role="tablist">
+      <div className="bg-card rounded-xl p-1 mb-6 shadow-md">
+        <div className="flex gap-1 overflow-x-auto md:flex-nowrap" role="tablist">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               role="tab"
               aria-selected={activeTab === tab.id}
               aria-controls={`tabpanel-${tab.id}`}
-              className={`match-detail__tab ${
-                activeTab === tab.id ? 'match-detail__tab--active' : ''
-              }`}
+              className={cn(
+                'flex-1 px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200',
+                'md:whitespace-nowrap md:px-3.5 md:py-2.5 md:text-xs',
+                activeTab === tab.id
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground'
+              )}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}
@@ -71,18 +76,18 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
       </div>
 
       {/* Tab Content */}
-      <div className="match-detail__content">
+      <div className="min-h-[400px]">
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div
             role="tabpanel"
             id="tabpanel-overview"
             aria-labelledby="tab-overview"
-            className="match-detail__panel"
+            className="animate-[fadeIn_0.3s_ease]"
           >
-            <div className="match-detail__overview">
+            <div className="flex flex-col gap-6">
               {/* Match Timeline */}
-              <section className="match-detail__section">
+              <section>
                 <MatchTimeline
                   events={events}
                   homeTeamId={match.home_team_id}
@@ -92,24 +97,24 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
 
               {/* Quick Stats Preview */}
               {stats.home && stats.away && (
-                <section className="match-detail__section">
-                  <h3 className="match-detail__section-title">Key Statistics</h3>
-                  <div className="match-detail__quick-stats">
-                    <div className="quick-stat">
-                      <div className="quick-stat__label">Possession</div>
-                      <div className="quick-stat__value">
+                <section className="bg-card rounded-xl p-6 shadow-md">
+                  <h3 className="text-lg font-bold m-0 mb-4 text-foreground">Key Statistics</h3>
+                  <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 md:grid-cols-1">
+                    <div className="text-center p-4 bg-muted rounded-lg">
+                      <div className="text-xs text-muted-foreground mb-2">Possession</div>
+                      <div className="text-lg font-bold text-foreground">
                         {stats.home.possession}% - {stats.away.possession}%
                       </div>
                     </div>
-                    <div className="quick-stat">
-                      <div className="quick-stat__label">Shots on Target</div>
-                      <div className="quick-stat__value">
+                    <div className="text-center p-4 bg-muted rounded-lg">
+                      <div className="text-xs text-muted-foreground mb-2">Shots on Target</div>
+                      <div className="text-lg font-bold text-foreground">
                         {stats.home.shots_on_target} - {stats.away.shots_on_target}
                       </div>
                     </div>
-                    <div className="quick-stat">
-                      <div className="quick-stat__label">Corners</div>
-                      <div className="quick-stat__value">
+                    <div className="text-center p-4 bg-muted rounded-lg">
+                      <div className="text-xs text-muted-foreground mb-2">Corners</div>
+                      <div className="text-lg font-bold text-foreground">
                         {stats.home.corners} - {stats.away.corners}
                       </div>
                     </div>
@@ -126,10 +131,12 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
             role="tabpanel"
             id="tabpanel-stats"
             aria-labelledby="tab-stats"
-            className="match-detail__panel"
+            className="animate-[fadeIn_0.3s_ease]"
           >
             {statsLoading ? (
-              <div className="match-detail__loading">Loading statistics...</div>
+              <div className="bg-card rounded-xl py-12 px-6 text-center text-muted-foreground">
+                Loading statistics...
+              </div>
             ) : (
               <MatchStats
                 homeStats={stats.home}
@@ -147,11 +154,11 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
             role="tabpanel"
             id="tabpanel-lineups"
             aria-labelledby="tab-lineups"
-            className="match-detail__panel"
+            className="animate-[fadeIn_0.3s_ease]"
           >
-            <div className="match-detail__placeholder">
-              <h3>Team Lineups</h3>
-              <p>Lineups will be displayed here once available.</p>
+            <div className="bg-card rounded-xl py-12 px-6 text-center">
+              <h3 className="text-xl font-bold m-0 mb-3 text-foreground">Team Lineups</h3>
+              <p className="text-sm text-muted-foreground m-0">Lineups will be displayed here once available.</p>
             </div>
           </div>
         )}
@@ -162,208 +169,15 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
             role="tabpanel"
             id="tabpanel-h2h"
             aria-labelledby="tab-h2h"
-            className="match-detail__panel"
+            className="animate-[fadeIn_0.3s_ease]"
           >
-            <div className="match-detail__placeholder">
-              <h3>Head to Head</h3>
-              <p>Historical matchup data will be displayed here.</p>
+            <div className="bg-card rounded-xl py-12 px-6 text-center">
+              <h3 className="text-xl font-bold m-0 mb-3 text-foreground">Head to Head</h3>
+              <p className="text-sm text-muted-foreground m-0">Historical matchup data will be displayed here.</p>
             </div>
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        .match-detail {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 24px;
-        }
-
-        .match-detail__header {
-          margin-bottom: 24px;
-        }
-
-        .match-detail__realtime-status {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 12px;
-          padding: 8px 12px;
-          background: var(--success-bg);
-          color: var(--success-text);
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 500;
-        }
-
-        .match-detail__realtime-indicator {
-          display: inline-block;
-          width: 8px;
-          height: 8px;
-          background: var(--success-text);
-          border-radius: 50%;
-          animation: pulse-indicator 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-indicator {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-        }
-
-        .match-detail__tabs {
-          background: var(--surface);
-          border-radius: 12px;
-          padding: 4px;
-          margin-bottom: 24px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .match-detail__tabs-list {
-          display: flex;
-          gap: 4px;
-        }
-
-        .match-detail__tab {
-          flex: 1;
-          padding: 12px 16px;
-          background: transparent;
-          border: none;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--text-secondary);
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .match-detail__tab:hover {
-          background: var(--surface-hover);
-          color: var(--text-primary);
-        }
-
-        .match-detail__tab--active {
-          background: var(--primary);
-          color: var(--primary-text);
-        }
-
-        .match-detail__content {
-          min-height: 400px;
-        }
-
-        .match-detail__panel {
-          animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(8px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .match-detail__overview {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        }
-
-        .match-detail__section {
-          background: var(--surface);
-          border-radius: 12px;
-          padding: 24px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .match-detail__section-title {
-          font-size: 18px;
-          font-weight: 700;
-          margin: 0 0 16px;
-          color: var(--text-primary);
-        }
-
-        .match-detail__quick-stats {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 16px;
-        }
-
-        .quick-stat {
-          text-align: center;
-          padding: 16px;
-          background: var(--surface-alt);
-          border-radius: 8px;
-        }
-
-        .quick-stat__label {
-          font-size: 13px;
-          color: var(--text-secondary);
-          margin-bottom: 8px;
-        }
-
-        .quick-stat__value {
-          font-size: 18px;
-          font-weight: 700;
-          color: var(--text-primary);
-        }
-
-        .match-detail__placeholder {
-          background: var(--surface);
-          border-radius: 12px;
-          padding: 48px 24px;
-          text-align: center;
-        }
-
-        .match-detail__placeholder h3 {
-          font-size: 20px;
-          font-weight: 700;
-          margin: 0 0 12px;
-          color: var(--text-primary);
-        }
-
-        .match-detail__placeholder p {
-          font-size: 14px;
-          color: var(--text-secondary);
-          margin: 0;
-        }
-
-        .match-detail__loading {
-          background: var(--surface);
-          border-radius: 12px;
-          padding: 48px 24px;
-          text-align: center;
-          color: var(--text-secondary);
-        }
-
-        @media (max-width: 768px) {
-          .match-detail {
-            padding: 16px;
-          }
-
-          .match-detail__tabs-list {
-            overflow-x: auto;
-            flex-wrap: nowrap;
-          }
-
-          .match-detail__tab {
-            white-space: nowrap;
-            padding: 10px 14px;
-            font-size: 13px;
-          }
-
-          .match-detail__quick-stats {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
     </div>
   );
 }

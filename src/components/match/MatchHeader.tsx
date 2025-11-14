@@ -17,6 +17,8 @@
 
 import React from 'react';
 import type { MatchDetail } from '@/types/matches';
+import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface MatchHeaderProps {
   readonly match: MatchDetail;
@@ -43,43 +45,48 @@ export function MatchHeader({
   });
 
   return (
-    <div className={`match-header ${className}`}>
+    <div className={cn('bg-card rounded-xl p-6 shadow-md', className)}>
       {/* League Info */}
-      <div className="match-header__league">
-        <span className="match-header__league-name">{match.league.name}</span>
+      <div className="text-center mb-4 text-sm text-muted-foreground">
+        <span className="font-semibold">{match.league.name}</span>
         {match.league.country && (
-          <span className="match-header__league-country"> • {match.league.country}</span>
+          <span> • {match.league.country}</span>
         )}
       </div>
 
       {/* Main Header */}
-      <div className="match-header__main">
+      <div className="grid grid-cols-3 gap-6 items-center md:grid-cols-1 md:gap-4">
         {/* Home Team */}
-        <div className="match-header__team match-header__team--home">
+        <div className="flex items-center gap-3 justify-end md:justify-center">
           {match.home_team.logo_url && (
-            <img
+            <Image
               src={match.home_team.logo_url}
               alt={match.home_team.name}
-              className="match-header__team-logo"
+              className="w-12 h-12 object-contain"
               width={48}
               height={48}
             />
           )}
-          <div className="match-header__team-info">
-            <h2 className="match-header__team-name">{match.home_team.name}</h2>
+          <div className="flex flex-col items-end md:items-center">
+            <h2 className="text-xl font-bold m-0 text-foreground">{match.home_team.name}</h2>
             {match.home_team.short_name && (
-              <span className="match-header__team-short">{match.home_team.short_name}</span>
+              <span className="text-xs text-muted-foreground uppercase">{match.home_team.short_name}</span>
             )}
           </div>
         </div>
 
         {/* Score & Status */}
-        <div className="match-header__center">
+        <div className="flex flex-col items-center gap-2 min-w-[120px]">
           {/* Status Badge */}
-          <div className={`match-header__status match-header__status--${match.status}`}>
+          <div className={cn(
+            'text-xs font-semibold px-3 py-1 rounded-2xl uppercase',
+            isLive && 'bg-red-600/10 text-red-600',
+            isFinished && 'bg-slate-600/10 text-slate-600',
+            isScheduled && 'bg-blue-600/10 text-blue-600'
+          )}>
             {isLive && showLiveIndicator && (
-              <span className="match-header__live-indicator" aria-label="Live match">
-                <span className="match-header__live-dot" />
+              <span className="flex items-center gap-1.5" aria-label="Live match">
+                <span className="inline-block w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse" />
                 {' '}
                 LIVE
               </span>
@@ -92,34 +99,37 @@ export function MatchHeader({
 
           {/* Score */}
           {!isScheduled && (
-            <div className="match-header__score">
-              <span className="match-header__score-value">{match.home_score ?? 0}</span>
-              <span className="match-header__score-separator">-</span>
-              <span className="match-header__score-value">{match.away_score ?? 0}</span>
+            <div className="flex items-center gap-3 text-4xl font-bold text-foreground md:text-3xl">
+              <span>{match.home_score ?? 0}</span>
+              <span className="text-muted-foreground text-2xl">-</span>
+              <span>{match.away_score ?? 0}</span>
             </div>
           )}
 
           {/* Minute */}
           {isLive && match.minute !== null && (
-            <div className="match-header__minute" aria-label={`Match minute ${match.minute}`}>
+            <div
+              className="text-sm font-semibold text-red-600 bg-red-600/10 px-2 py-0.5 rounded"
+              aria-label={`Match minute ${match.minute}`}
+            >
               {match.minute}&apos;
             </div>
           )}
         </div>
 
         {/* Away Team */}
-        <div className="match-header__team match-header__team--away">
-          <div className="match-header__team-info">
-            <h2 className="match-header__team-name">{match.away_team.name}</h2>
+        <div className="flex items-center gap-3 justify-start md:justify-center">
+          <div className="flex flex-col items-start md:items-center">
+            <h2 className="text-xl font-bold m-0 text-foreground">{match.away_team.name}</h2>
             {match.away_team.short_name && (
-              <span className="match-header__team-short">{match.away_team.short_name}</span>
+              <span className="text-xs text-muted-foreground uppercase">{match.away_team.short_name}</span>
             )}
           </div>
           {match.away_team.logo_url && (
-            <img
+            <Image
               src={match.away_team.logo_url}
               alt={match.away_team.name}
-              className="match-header__team-logo"
+              className="w-12 h-12 object-contain"
               width={48}
               height={48}
             />
@@ -128,200 +138,14 @@ export function MatchHeader({
       </div>
 
       {/* Additional Info */}
-      <div className="match-header__info">
-        {match.venue && <span className="match-header__venue">{match.venue}</span>}
+      <div className="flex justify-center gap-4 mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
+        {match.venue && <span>{match.venue}</span>}
         {match.referee && (
-          <span className="match-header__referee">
+          <span>
             Referee: {match.referee.name}
           </span>
         )}
       </div>
-
-      <style jsx>{`
-        .match-header {
-          background: var(--surface);
-          border-radius: 12px;
-          padding: 24px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .match-header__league {
-          text-align: center;
-          margin-bottom: 16px;
-          font-size: 14px;
-          color: var(--text-secondary);
-        }
-
-        .match-header__league-name {
-          font-weight: 600;
-        }
-
-        .match-header__main {
-          display: grid;
-          grid-template-columns: 1fr auto 1fr;
-          gap: 24px;
-          align-items: center;
-        }
-
-        .match-header__team {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .match-header__team--home {
-          justify-content: flex-end;
-        }
-
-        .match-header__team--away {
-          justify-content: flex-start;
-        }
-
-        .match-header__team-logo {
-          width: 48px;
-          height: 48px;
-          object-fit: contain;
-        }
-
-        .match-header__team-info {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .match-header__team--home .match-header__team-info {
-          align-items: flex-end;
-        }
-
-        .match-header__team--away .match-header__team-info {
-          align-items: flex-start;
-        }
-
-        .match-header__team-name {
-          font-size: 20px;
-          font-weight: 700;
-          margin: 0;
-          color: var(--text-primary);
-        }
-
-        .match-header__team-short {
-          font-size: 12px;
-          color: var(--text-secondary);
-          text-transform: uppercase;
-        }
-
-        .match-header__center {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-          min-width: 120px;
-        }
-
-        .match-header__status {
-          font-size: 12px;
-          font-weight: 600;
-          padding: 4px 12px;
-          border-radius: 16px;
-          text-transform: uppercase;
-        }
-
-        .match-header__status--live {
-          background: var(--live-bg);
-          color: var(--live-text);
-        }
-
-        .match-header__status--finished {
-          background: var(--finished-bg);
-          color: var(--finished-text);
-        }
-
-        .match-header__status--scheduled {
-          background: var(--scheduled-bg);
-          color: var(--scheduled-text);
-        }
-
-        .match-header__live-indicator {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .match-header__live-dot {
-          display: inline-block;
-          width: 6px;
-          height: 6px;
-          background: var(--live-text);
-          border-radius: 50%;
-          animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-        }
-
-        .match-header__score {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          font-size: 36px;
-          font-weight: 700;
-          color: var(--text-primary);
-        }
-
-        .match-header__score-separator {
-          color: var(--text-secondary);
-          font-size: 24px;
-        }
-
-        .match-header__minute {
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--live-text);
-          background: var(--live-bg);
-          padding: 2px 8px;
-          border-radius: 4px;
-        }
-
-        .match-header__info {
-          display: flex;
-          justify-content: center;
-          gap: 16px;
-          margin-top: 16px;
-          padding-top: 16px;
-          border-top: 1px solid var(--border);
-          font-size: 13px;
-          color: var(--text-secondary);
-        }
-
-        @media (max-width: 768px) {
-          .match-header__main {
-            grid-template-columns: 1fr;
-            gap: 16px;
-          }
-
-          .match-header__team {
-            justify-content: center !important;
-          }
-
-          .match-header__team-info {
-            align-items: center !important;
-          }
-
-          .match-header__team-name {
-            font-size: 18px;
-          }
-
-          .match-header__score {
-            font-size: 28px;
-          }
-        }
-      `}</style>
     </div>
   );
 }
