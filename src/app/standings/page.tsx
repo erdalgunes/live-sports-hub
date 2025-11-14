@@ -20,7 +20,7 @@ export default async function StandingsPage({ searchParams }: StandingsPageProps
   const season = Number.parseInt(resolvedParams.season || String(getCurrentSeason()), 10)
   const leagueId = 39 // Premier League
 
-  let standingsTable: any[] = []
+  let standingsTable: unknown[] = []
   let error: string | null = null
 
   try {
@@ -32,7 +32,7 @@ export default async function StandingsPage({ searchParams }: StandingsPageProps
     const fixturesCache = await getAllTeamFixturesFromCache(leagueId, season)
 
     // Enhance standings with form data from cache
-    standingsTable = standingsTable.map((team: any) => {
+    standingsTable = standingsTable.map((team: { team: { id: number; name: string; logo: string }; rank: number; [key: string]: unknown }) => {
       const fixtures = fixturesCache.get(team.team.id)
 
       if (!fixtures || fixtures.length === 0) {

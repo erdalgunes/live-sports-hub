@@ -44,7 +44,7 @@ export const CACHE_TTL = {
 const LIVE_STATUSES = new Set(['1H', '2H', 'HT', 'ET', 'P', 'LIVE', 'BT', 'INT']);
 const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN']);
 const POSTPONED_STATUSES = new Set(['PST', 'CANC', 'ABD', 'SUSP', 'AWD', 'WO']);
-const SCHEDULED_STATUSES = new Set(['TBD', 'NS', 'SCHE']);
+const _SCHEDULED_STATUSES = new Set(['TBD', 'NS', 'SCHE']); // Reserved for future use
 
 /**
  * Calculate adaptive TTL based on fixture data
@@ -68,7 +68,7 @@ function calculateAdaptiveTTL(endpoint: string, responseData: unknown): number {
   }
 
   // Parse fixture response
-  let fixtures: any[] = [];
+  let fixtures: unknown[] = [];
   if (Array.isArray(responseData)) {
     fixtures = responseData;
   } else if (typeof responseData === 'object' && responseData !== null) {

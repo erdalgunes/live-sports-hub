@@ -5,18 +5,18 @@ import { cn } from '@/lib/utils'
 import { processFormString } from '@/lib/utils/form'
 
 interface StandingsTableProps {
-  standings: any[]
+  standings: unknown[]
   type: 'all' | 'home' | 'away'
 }
 
 export function StandingsTable({ standings, type }: StandingsTableProps) {
-  const getStats = (team: any) => {
+  const getStats = (team: { team: { id: number; name: string; logo: string }; rank: number; [key: string]: unknown }) => {
     if (type === 'home') return team.home
     if (type === 'away') return team.away
     return team.all
   }
 
-  const getForm = (team: any) => {
+  const getForm = (team: { team: { id: number; name: string; logo: string }; rank: number; [key: string]: unknown }) => {
     if (type === 'home') {
       return processFormString(team.homeForm || '')
     }
@@ -119,7 +119,7 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
           </tr>
         </thead>
         <tbody>
-          {sortedStandings.map((team: any, index: number) => {
+          {sortedStandings.map((team: { team: { id: number; name: string; logo: string }; rank: number; [key: string]: unknown }, index: number) => {
             const stats = getStats(team)
             const form = getForm(team)
             const currentPosition = index + 1

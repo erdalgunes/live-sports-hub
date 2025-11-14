@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StandingsTable } from './standings-table'
 
 interface StandingsTabsProps {
-  standings: any[]
+  standings: unknown[]
 }
 
 export function StandingsTabs({ standings }: StandingsTabsProps) {

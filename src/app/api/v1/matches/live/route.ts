@@ -7,7 +7,7 @@ import {
 } from '@/lib/utils/api-response';
 import { getLiveMatches } from '@/services/matches';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   return withErrorHandling(async () => {
     // Fetch all live matches
     const liveMatches = await getLiveMatches();

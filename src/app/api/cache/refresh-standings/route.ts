@@ -11,7 +11,7 @@ import { refreshTeamFixturesCache } from '@/lib/supabase/standings-cache'
  * Body: { leagueId: 39, season: 2025 }
  * Header: Authorization: Bearer <secret>
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // Optional: Add authentication
     const authHeader = request.headers.get('authorization')
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract team IDs
-    const teamIds = standings.map((team: any) => team.team.id)
+    const teamIds = standings.map((team: { team: { id: number } }) => team.team.id)
 
     console.log(`[Cache Refresh] Found ${teamIds.length} teams to refresh`)
 
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 /**
  * GET endpoint for manual triggering or health check
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const leagueId = Number.parseInt(searchParams.get('leagueId') || '39')
   const season = Number.parseInt(searchParams.get('season') || String(new Date().getFullYear()))

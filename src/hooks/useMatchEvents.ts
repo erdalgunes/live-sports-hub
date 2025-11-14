@@ -8,6 +8,10 @@
  * const { events, loading, error } = useMatchEvents(matchId);
  */
 
+/* eslint-disable react-hooks/set-state-in-effect */
+// Early returns with setState are valid patterns - known eslint bug
+// See: https://github.com/facebook/react/issues/34743
+
 'use client';
 
 import { useEffect, useState } from 'react';

@@ -7,7 +7,7 @@ export const revalidate = 60 // ISR: revalidate every 60 seconds
 
 export default async function HomePage() {
   // Server-side initial data
-  let fixtures: any[] = []
+  let fixtures: unknown[] = []
   let error: string | null = null
 
   try {

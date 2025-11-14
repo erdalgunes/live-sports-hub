@@ -102,7 +102,7 @@ export function MatchHeader({
           {/* Minute */}
           {isLive && match.minute !== null && (
             <div className="match-header__minute" aria-label={`Match minute ${match.minute}`}>
-              {match.minute}'
+              {match.minute}&apos;
             </div>
           )}
         </div>

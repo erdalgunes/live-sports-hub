@@ -3,7 +3,7 @@ import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 
 interface CompactMatchRowProps {
-  fixture: any
+  fixture: unknown
 }
 
 export function CompactMatchRow({ fixture }: CompactMatchRowProps) {

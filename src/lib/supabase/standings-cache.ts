@@ -7,7 +7,7 @@
  */
 
 import { createClient as createServerClient } from './server'
-import { getFixturesByTeam } from '@/lib/api-football/services'
+import { getFixturesByTeam, type ApiFootballFixture } from '@/lib/api-football/services'
 
 export interface CachedFixture {
   fixtureId: number
@@ -47,7 +47,7 @@ export async function getTeamFixturesFromCache(
     .eq('team_id', teamId)
     .eq('league_id', leagueId)
     .eq('season', season)
-    .single() as { data: { fixtures: unknown; expires_at: string } | null; error: any }
+    .single() as { data: { fixtures: unknown; expires_at: string } | null; error: unknown }
 
   if (error || !data) return null
 
@@ -77,7 +77,7 @@ export async function getAllTeamFixturesFromCache(
     .eq('league_id', leagueId)
     .eq('season', season) as {
       data: Array<{ team_id: number; fixtures: unknown; expires_at: string }> | null
-      error: any
+      error: unknown
     }
 
   if (error || !data) return new Map()
@@ -112,7 +112,7 @@ export async function isCacheStale(
     .eq('league_id', leagueId)
     .eq('season', season)
     .limit(1)
-    .single() as { data: { expires_at: string } | null; error: any }
+    .single() as { data: { expires_at: string } | null; error: unknown }
 
   if (error || !data) return true // No cache = stale
 
@@ -135,12 +135,12 @@ export async function setTeamFixturesToCache(
   const expiresAt = new Date(now.getTime() + CACHE_DURATION_MS)
 
   // Type assertion to work around Supabase type inference issues
-  await (supabase.from('team_fixtures_cache') as any).upsert(
+  await supabase.from('team_fixtures_cache').upsert(
     {
       team_id: teamId,
       league_id: leagueId,
       season: season,
-      fixtures: fixtures as any,
+      fixtures: fixtures as unknown,
       cached_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
     },
@@ -218,7 +218,7 @@ async function fetchAndCacheTeamFixtures(
 
   const fixtures = await getFixturesByTeam(teamId, season, leagueId, 10)
 
-  const cachedFixtures: CachedFixture[] = fixtures.map((f: any) => ({
+  const cachedFixtures: CachedFixture[] = fixtures.map((f: ApiFootballFixture) => ({
     fixtureId: f.fixture.id,
     date: f.fixture.date,
     homeTeamId: f.teams.home.id,

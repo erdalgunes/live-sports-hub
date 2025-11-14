@@ -12,7 +12,7 @@ import {
  * GET /api/v1/admin/cache
  * Returns cache statistics
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   return withErrorHandling(async () => {
     const stats = await getCacheStats();
 

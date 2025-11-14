@@ -8,7 +8,7 @@ export class APIFootballError extends Error {
   constructor(
     message: string,
     public status: number,
-    public response?: any
+    public response?: unknown
   ) {
     super(message)
     this.name = 'APIFootballError'
@@ -100,19 +100,19 @@ export const getFixtureById = cache(async (fixtureId: number): Promise<APIRespon
   })
 })
 
-export const getLeagues = cache(async (): Promise<APIResponse<any[]>> => {
+export const getLeagues = cache(async (): Promise<APIResponse<unknown[]>> => {
   return fetchAPI('/leagues', {
     next: { revalidate: 86400 }, // ISR: 24 hours
   })
 })
 
-export const getStandings = cache(async (leagueId: number, season: number): Promise<APIResponse<any[]>> => {
+export const getStandings = cache(async (leagueId: number, season: number): Promise<APIResponse<unknown[]>> => {
   return fetchAPI(`/standings?league=${leagueId}&season=${season}`, {
     next: { revalidate: 3600 }, // ISR: 1 hour
   })
 })
 
-export const getFixtureStatistics = cache(async (fixtureId: number): Promise<APIResponse<any[]>> => {
+export const getFixtureStatistics = cache(async (fixtureId: number): Promise<APIResponse<unknown[]>> => {
   return fetchAPI(`/fixtures/statistics?fixture=${fixtureId}`, {
     next: { revalidate: 60 },
   })
@@ -123,7 +123,7 @@ export const getFixturesByTeam = cache(async (
   season: number,
   leagueId: number,
   last: number = 10
-): Promise<APIResponse<any[]>> => {
+): Promise<APIResponse<unknown[]>> => {
   return fetchAPI(`/fixtures?team=${teamId}&season=${season}&league=${leagueId}&last=${last}`, {
     next: { revalidate: 3600 }, // ISR: 1 hour
   })

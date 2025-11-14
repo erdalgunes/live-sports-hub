@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Get cache trends
-    const { data, error } = await (supabase as any).rpc('get_cache_trends', {
+    const { data, error } = await supabase.rpc('get_cache_trends', {
       hours_back: hours,
     });
 
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
  * POST /api/v1/admin/cache/monitoring
  * Manually trigger a cache snapshot
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   return withErrorHandling(async () => {
     const supabase = await createClient();
 

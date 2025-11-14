@@ -79,16 +79,16 @@ export async function GET(
 
     // Process fixtures data
     const errors: Array<{ resource: string; message: string }> = [];
-    let upcomingFixtures: any[] = [];
-    let recentResults: any[] = [];
+    let upcomingFixtures: unknown[] = [];
+    let recentResults: unknown[] = [];
 
     if (allFixturesResult.status === 'fulfilled' && allFixturesResult.value) {
       const allFixtures = allFixturesResult.value;
       const now = Date.now();
 
       // Separate into upcoming and recent
-      const upcoming: any[] = [];
-      const recent: any[] = [];
+      const upcoming: unknown[] = [];
+      const recent: unknown[] = [];
 
       for (const fixture of allFixtures) {
         const matchTime = new Date(fixture.fixture.date).getTime();

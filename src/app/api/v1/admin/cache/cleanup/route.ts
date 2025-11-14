@@ -16,7 +16,7 @@ import {
  * 2. Scheduled cron job (e.g., Vercel Cron)
  * 3. Supabase pg_cron
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   return withErrorHandling(async () => {
     const supabase = await createClient();
 

@@ -28,7 +28,7 @@ interface PendingRequest<T> {
  * If a request is already pending, subsequent requests wait for the same promise.
  */
 class RequestDeduplicator {
-  private readonly pending: Map<string, PendingRequest<any>> = new Map();
+  private readonly pending: Map<string, PendingRequest<unknown>> = new Map();
   private readonly TTL = 5000; // 5 seconds deduplication window
 
   /**

@@ -140,7 +140,7 @@ export interface MatchEvent {
   minute: number;
   extra_minute: number;
   detail: string | null;
-  event_data: Record<string, any> | null;
+  event_data: Record<string, unknown> | null;
   created_at: string;
 }
 

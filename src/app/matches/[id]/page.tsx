@@ -70,8 +70,8 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
   let initialMatch;
   try {
     initialMatch = await getMatchById(matchId);
-  } catch (error) {
-    console.error('Failed to fetch match:', error);
+  } catch {
+    console.error('Failed to fetch match');
     notFound();
   }
 

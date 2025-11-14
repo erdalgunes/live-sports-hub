@@ -28,8 +28,8 @@ export default async function FixturesPage({ searchParams }: FixturesPageProps) 
   const selectedDateFormatted = format(selectedDate, DATE_FORMATS.API)
 
   // Fetch fixtures based on view type
-  let fixturesData: any[] = []
-  let roundFixturesData: any[] = []
+  let fixturesData: unknown[] = []
+  let roundFixturesData: unknown[] = []
   let error: string | null = null
 
   if (view === 'date') {

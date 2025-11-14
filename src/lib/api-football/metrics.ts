@@ -147,7 +147,7 @@ export const metrics = new ApiMetrics();
 
 // Expose metrics to global scope for debugging (Node.js only)
 if (typeof window === 'undefined' && typeof global !== 'undefined') {
-  (global as any).__apiMetrics = metrics;
+  (global as unknown).__apiMetrics = metrics;
 }
 
 /**

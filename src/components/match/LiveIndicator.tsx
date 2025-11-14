@@ -46,7 +46,7 @@ export function LiveIndicator({
       <span className={`live-indicator__dot ${animated ? 'live-indicator__dot--animated' : ''}`} />
       {showText && <span className="live-indicator__text">LIVE</span>}
       {minute !== null && minute !== undefined && (
-        <span className="live-indicator__minute">{minute}'</span>
+        <span className="live-indicator__minute">{minute}&apos;</span>
       )}
 
       {/* sonar-disable-next-line typescript:S6747 */}

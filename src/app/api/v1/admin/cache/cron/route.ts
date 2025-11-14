@@ -11,21 +11,23 @@ import {
  * GET /api/v1/admin/cache/cron
  * Returns status of all cache-related cron jobs
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   return withErrorHandling(async () => {
     const supabase = await createClient();
 
     // Get cron job status
-    const { data, error } = await supabase.rpc('get_cache_cron_status' as any);
+    const { data, error } = await supabase.rpc('get_cache_cron_status');
 
     if (error) {
       throw new Error(`Failed to get cron status: ${error.message}`);
     }
 
+    const jobs = (data as unknown[]) || []
+
     return apiSuccess(
       {
-        jobs: (data as any[]) || [],
-        count: (data as any[])?.length || 0,
+        jobs,
+        count: jobs.length,
         timestamp: new Date().toISOString(),
       },
       {

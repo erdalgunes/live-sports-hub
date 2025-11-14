@@ -3,8 +3,8 @@
 
 export interface APIResponse<T> {
   get: string
-  parameters: Record<string, any>
-  errors: Record<string, any>
+  parameters: Record<string, unknown>
+  errors: Record<string, unknown>
   results: number
   paging: {
     current: number

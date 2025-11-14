@@ -109,7 +109,7 @@ export function MatchTimeline({
                 >
                   <span className="match-timeline__icon">{eventIcon}</span>
                 </div>
-                <div className="match-timeline__minute">{event.minute}'</div>
+                <div className="match-timeline__minute">{event.minute}&apos;</div>
               </div>
 
               {/* Away side content */}
