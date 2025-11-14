@@ -20,8 +20,8 @@ export function MatchCard({ fixture }: MatchCardProps) {
       return `${teams.home.name} ${goals.home} vs ${goals.away} ${teams.away.name} - Full Time`
     }
     if (status === 'LIVE' || status === '1H' || status === '2H' || status === 'HT') {
-      const elapsed = match.status.elapsed ? `${match.status.elapsed}'` : ''
-      return `${teams.home.name} ${goals.home} vs ${goals.away} ${teams.away.name} - Live ${elapsed}`
+      const elapsedText = match.status.elapsed ? match.status.elapsed + "'" : ''
+      return `${teams.home.name} ${goals.home} vs ${goals.away} ${teams.away.name} - Live ${elapsedText}`
     }
     const scheduledTime = formatDate(match.date, DATE_FORMATS.DISPLAY_WITH_TIME)
     return `${teams.home.name} vs ${teams.away.name} - Scheduled for ${scheduledTime}`

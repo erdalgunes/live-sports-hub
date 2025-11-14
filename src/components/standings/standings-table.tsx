@@ -176,8 +176,7 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
                 <td className="px-3 py-3 text-center text-sm font-medium hidden sm:table-cell">
                   {(() => {
                     const diff = stats.goals.for - stats.goals.against
-                    const sign = diff > 0 ? '+' : ''
-                    return `${sign}${diff}`
+                    return diff > 0 ? `+${diff}` : String(diff)
                   })()}
                 </td>
 
