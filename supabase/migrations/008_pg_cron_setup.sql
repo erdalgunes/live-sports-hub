@@ -10,7 +10,18 @@
 -- For Supabase hosted projects, pg_cron is pre-installed
 -- For local development, ensure pg_cron is available
 
-CREATE EXTENSION IF NOT EXISTS pg_cron;
+-- Try to create pg_cron extension, but don't fail if unavailable
+DO $$
+BEGIN
+    CREATE EXTENSION IF NOT EXISTS pg_cron;
+EXCEPTION
+    WHEN insufficient_privilege THEN
+        RAISE NOTICE 'pg_cron extension requires superuser privileges - skipping';
+    WHEN undefined_file THEN
+        RAISE NOTICE 'pg_cron extension not available in this environment - skipping';
+    WHEN OTHERS THEN
+        RAISE NOTICE 'pg_cron extension could not be created: % - skipping', SQLERRM;
+END $$;
 
 -- ============================================================================
 -- Constants: Job Names
@@ -33,7 +44,17 @@ DECLARE
     v_job_cleanup_cache CONSTANT TEXT := v_cache_jobs[1];
     v_job_cache_snapshot CONSTANT TEXT := v_cache_jobs[2];
     v_job_cleanup_monitoring CONSTANT TEXT := v_cache_jobs[3];
+    v_pg_cron_available BOOLEAN;
 BEGIN
+    -- Check if pg_cron extension is available
+    SELECT EXISTS (
+        SELECT 1 FROM pg_extension WHERE extname = 'pg_cron'
+    ) INTO v_pg_cron_available;
+
+    IF NOT v_pg_cron_available THEN
+        RAISE NOTICE 'pg_cron extension not available - skipping cron job setup';
+        RETURN;
+    END IF;
     -- Unschedule if exists (for migration idempotency)
     PERFORM cron.unschedule(v_job_cleanup_cache)
     WHERE EXISTS (
@@ -82,76 +103,100 @@ BEGIN
     );
 END $$;
 
-COMMENT ON EXTENSION pg_cron IS
-'Schedules automated cache cleanup and monitoring tasks';
+-- Add comment only if extension was created successfully
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+        COMMENT ON EXTENSION pg_cron IS
+        'Schedules automated cache cleanup and monitoring tasks';
+    END IF;
+END $$;
 
 -- ============================================================================
 -- View Scheduled Jobs
 -- ============================================================================
 
--- Create a view to easily check scheduled jobs
-CREATE OR REPLACE VIEW cache_cron_jobs AS
-SELECT
-    jobid,
-    jobname,
-    schedule,
-    command,
-    nodename,
-    nodeport,
-    database,
-    username,
-    active
-FROM cron.job
-WHERE jobname = ANY(get_cache_job_names())
-ORDER BY jobname;
+-- Create a view to easily check scheduled jobs (only if pg_cron is available)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+        EXECUTE '
+            CREATE OR REPLACE VIEW cache_cron_jobs AS
+            SELECT
+                jobid,
+                jobname,
+                schedule,
+                command,
+                nodename,
+                nodeport,
+                database,
+                username,
+                active
+            FROM cron.job
+            WHERE jobname = ANY(get_cache_job_names())
+            ORDER BY jobname
+        ';
 
-COMMENT ON VIEW cache_cron_jobs IS
-'View of all cache-related cron jobs for easy monitoring';
+        COMMENT ON VIEW cache_cron_jobs IS
+        'View of all cache-related cron jobs for easy monitoring';
+    ELSE
+        RAISE NOTICE 'Skipping cache_cron_jobs view - pg_cron not available';
+    END IF;
+END $$;
 
 -- ============================================================================
 -- Helper Function: Get Cron Job Status
 -- ============================================================================
 
-CREATE OR REPLACE FUNCTION get_cache_cron_status()
-RETURNS TABLE(
-    job_name TEXT,
-    schedule TEXT,
-    is_active BOOLEAN,
-    last_run TIMESTAMPTZ,
-    next_run TIMESTAMPTZ,
-    run_count BIGINT
-) AS $$
-DECLARE
-    v_cache_jobs CONSTANT TEXT[] := get_cache_job_names();
+DO $$
 BEGIN
-    RETURN QUERY
-    SELECT
-        j.jobname::TEXT as job_name,
-        j.schedule::TEXT,
-        j.active as is_active,
-        (
-            SELECT MAX(start_time)
-            FROM cron.job_run_details
-            WHERE jobid = j.jobid
-        ) as last_run,
-        -- Calculate next run (simplified - assumes cron is running)
-        CASE
-            WHEN j.active THEN NOW() + INTERVAL '1 hour'  -- Approximate
-            ELSE NULL
-        END as next_run,
-        (
-            SELECT COUNT(*)
-            FROM cron.job_run_details
-            WHERE jobid = j.jobid
-        ) as run_count
-    FROM cron.job j
-    WHERE j.jobname = ANY(v_cache_jobs)
-    ORDER BY j.jobname;
-END;
-$$ LANGUAGE plpgsql;
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+        EXECUTE '
+            CREATE OR REPLACE FUNCTION get_cache_cron_status()
+            RETURNS TABLE(
+                job_name TEXT,
+                schedule TEXT,
+                is_active BOOLEAN,
+                last_run TIMESTAMPTZ,
+                next_run TIMESTAMPTZ,
+                run_count BIGINT
+            ) AS $func$
+            DECLARE
+                v_cache_jobs CONSTANT TEXT[] := get_cache_job_names();
+            BEGIN
+                RETURN QUERY
+                SELECT
+                    j.jobname::TEXT as job_name,
+                    j.schedule::TEXT,
+                    j.active as is_active,
+                    (
+                        SELECT MAX(start_time)
+                        FROM cron.job_run_details
+                        WHERE jobid = j.jobid
+                    ) as last_run,
+                    -- Calculate next run (simplified - assumes cron is running)
+                    CASE
+                        WHEN j.active THEN NOW() + INTERVAL ''1 hour''  -- Approximate
+                        ELSE NULL
+                    END as next_run,
+                    (
+                        SELECT COUNT(*)
+                        FROM cron.job_run_details
+                        WHERE jobid = j.jobid
+                    ) as run_count
+                FROM cron.job j
+                WHERE j.jobname = ANY(v_cache_jobs)
+                ORDER BY j.jobname;
+            END;
+            $func$ LANGUAGE plpgsql
+        ';
 
-COMMENT ON FUNCTION get_cache_cron_status() IS
-'Returns status and execution history of cache-related cron jobs';
+        COMMENT ON FUNCTION get_cache_cron_status() IS
+        'Returns status and execution history of cache-related cron jobs';
+    ELSE
+        RAISE NOTICE 'Skipping get_cache_cron_status function - pg_cron not available';
+    END IF;
+END $$;
 
 -- ============================================================================
 -- Verification Queries
