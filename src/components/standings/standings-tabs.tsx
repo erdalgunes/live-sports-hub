@@ -7,7 +7,7 @@ interface StandingsTabsProps {
   standings: unknown[]
 }
 
-export function StandingsTabs({ standings }: StandingsTabsProps) {
+export function StandingsTabs({ standings }: Readonly<StandingsTabsProps>) {
   return (
     <Tabs defaultValue="all" className="w-full">
       <div className="flex justify-center mb-6">

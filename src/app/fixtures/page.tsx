@@ -16,7 +16,7 @@ interface FixturesPageProps {
   searchParams: Promise<{ season?: string; view?: string; round?: string; date?: string }>
 }
 
-export default async function FixturesPage({ searchParams }: FixturesPageProps) {
+export default async function FixturesPage({ searchParams }: Readonly<FixturesPageProps>) {
   const resolvedParams = await searchParams
   const season = Number.parseInt(resolvedParams.season || String(getCurrentSeason()), 10)
   const view = resolvedParams.view || 'date'

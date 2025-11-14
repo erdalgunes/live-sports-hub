@@ -6,7 +6,7 @@ interface CompactMatchRowProps {
   fixture: unknown
 }
 
-export function CompactMatchRow({ fixture }: CompactMatchRowProps) {
+export function CompactMatchRow({ fixture }: Readonly<CompactMatchRowProps>) {
   const { fixture: match, teams, goals } = fixture
 
   const homeScore = goals.home ?? 0

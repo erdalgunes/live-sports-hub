@@ -9,7 +9,7 @@ interface StandingsTableProps {
   type: 'all' | 'home' | 'away'
 }
 
-export function StandingsTable({ standings, type }: StandingsTableProps) {
+export function StandingsTable({ standings, type }: Readonly<StandingsTableProps>) {
   const getStats = (team: { team: { id: number; name: string; logo: string }; rank: number; [key: string]: unknown }) => {
     if (type === 'home') return team.home
     if (type === 'away') return team.away

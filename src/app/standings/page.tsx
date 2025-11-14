@@ -15,7 +15,7 @@ interface StandingsPageProps {
   searchParams: Promise<{ season?: string }>
 }
 
-export default async function StandingsPage({ searchParams }: StandingsPageProps) {
+export default async function StandingsPage({ searchParams }: Readonly<StandingsPageProps>) {
   const resolvedParams = await searchParams
   const season = Number.parseInt(resolvedParams.season || String(getCurrentSeason()), 10)
   const leagueId = 39 // Premier League

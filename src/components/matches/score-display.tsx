@@ -12,7 +12,7 @@ export function ScoreDisplay({
   awayScore,
   status,
   className
-}: ScoreDisplayProps) {
+}: Readonly<ScoreDisplayProps>) {
   const showScore = homeScore !== null && awayScore !== null
 
   return (
