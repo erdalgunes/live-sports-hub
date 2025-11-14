@@ -20,19 +20,32 @@ export default async function StandingsPage({ searchParams }: Readonly<Standings
   const season = Number.parseInt(resolvedParams.season || String(getCurrentSeason()), 10)
   const leagueId = 39 // Premier League
 
-  let standingsTable: unknown[] = []
+  type StandingTeam = {
+    team: { id: number; name: string; logo: string }
+    rank: number
+    form?: string
+    [key: string]: unknown
+  }
+
+  let standingsTable: StandingTeam[] = []
   let error: string | null = null
 
   try {
     // Fetch basic standings data
     const standingsData = await getStandings(leagueId, season)
-    standingsTable = standingsData.response[0]?.league?.standings?.[0] || []
+    // Type assertion for the standings response structure
+    type StandingResponse = {
+      league: {
+        standings: StandingTeam[][]
+      }
+    }
+    standingsTable = (standingsData.response as StandingResponse[])[0]?.league?.standings?.[0] || []
 
     // Fetch cached fixtures from Supabase
     const fixturesCache = await getAllTeamFixturesFromCache(leagueId, season)
 
     // Enhance standings with form data from cache
-    standingsTable = standingsTable.map((team: { team: { id: number; name: string; logo: string }; rank: number; [key: string]: unknown }) => {
+    standingsTable = standingsTable.map((team) => {
       const fixtures = fixturesCache.get(team.team.id)
 
       if (!fixtures || fixtures.length === 0) {

@@ -11,7 +11,7 @@ import { refreshTeamFixturesCache } from '@/lib/supabase/standings-cache'
  * Body: { leagueId: 39, season: 2025 }
  * Header: Authorization: Bearer <secret>
  */
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     // Optional: Add authentication
     const authHeader = request.headers.get('authorization')
@@ -33,7 +33,23 @@ export async function POST(_request: NextRequest) {
 
     // Fetch standings to get list of teams
     const standingsData = await getStandings(leagueId, season)
-    const standings = standingsData.response[0]?.league?.standings?.[0] || []
+
+    // Type assertion for the standings response structure
+    type StandingItem = {
+      team: { id: number; name: string; logo: string }
+      points: number
+      rank: number
+    }
+
+    type StandingResponse = {
+      league: {
+        id: number
+        name: string
+        standings: StandingItem[][]
+      }
+    }
+
+    const standings = (standingsData.response as StandingResponse[])[0]?.league?.standings?.[0] || []
 
     if (standings.length === 0) {
       return NextResponse.json(
@@ -43,7 +59,7 @@ export async function POST(_request: NextRequest) {
     }
 
     // Extract team IDs
-    const teamIds = standings.map((team: { team: { id: number } }) => team.team.id)
+    const teamIds = standings.map((team) => team.team.id)
 
     console.log(`[Cache Refresh] Found ${teamIds.length} teams to refresh`)
 
@@ -76,7 +92,7 @@ export async function POST(_request: NextRequest) {
 /**
  * GET endpoint for manual triggering or health check
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const leagueId = Number.parseInt(searchParams.get('leagueId') || '39')
   const season = Number.parseInt(searchParams.get('season') || String(new Date().getFullYear()))

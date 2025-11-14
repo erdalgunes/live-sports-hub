@@ -110,7 +110,7 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
                     <div className="quick-stat">
                       <div className="quick-stat__label">Corners</div>
                       <div className="quick-stat__value">
-                        {stats.home.corner_kicks} - {stats.away.corner_kicks}
+                        {stats.home.corners} - {stats.away.corners}
                       </div>
                     </div>
                   </div>
@@ -172,7 +172,7 @@ export default function MatchDetailClient({ initialMatch }: MatchDetailClientPro
         )}
       </div>
 
-      <style jsx>{/* NOSONAR */}{`
+      <style jsx>{`
         .match-detail {
           max-width: 1200px;
           margin: 0 auto;

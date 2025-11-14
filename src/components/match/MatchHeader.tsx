@@ -132,12 +132,12 @@ export function MatchHeader({
         {match.venue && <span className="match-header__venue">{match.venue}</span>}
         {match.referee && (
           <span className="match-header__referee">
-            Referee: {match.referee.first_name} {match.referee.last_name}
+            Referee: {match.referee.name}
           </span>
         )}
       </div>
 
-      <style jsx>{/* NOSONAR */}{`
+      <style jsx>{`
         .match-header {
           background: var(--surface);
           border-radius: 12px;

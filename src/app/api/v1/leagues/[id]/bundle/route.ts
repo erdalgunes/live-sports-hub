@@ -78,17 +78,24 @@ export async function GET(
     const standings = standingsData[0]?.league?.standings?.[0] || [];
 
     // Process fixtures data
+    type FixtureItem = {
+      fixture: {
+        date: string
+        status: { short: string }
+      }
+    }
+
     const errors: Array<{ resource: string; message: string }> = [];
-    let upcomingFixtures: unknown[] = [];
-    let recentResults: unknown[] = [];
+    let upcomingFixtures: FixtureItem[] = [];
+    let recentResults: FixtureItem[] = [];
 
     if (allFixturesResult.status === 'fulfilled' && allFixturesResult.value) {
-      const allFixtures = allFixturesResult.value;
+      const allFixtures = allFixturesResult.value as FixtureItem[];
       const now = Date.now();
 
       // Separate into upcoming and recent
-      const upcoming: unknown[] = [];
-      const recent: unknown[] = [];
+      const upcoming: FixtureItem[] = [];
+      const recent: FixtureItem[] = [];
 
       for (const fixture of allFixtures) {
         const matchTime = new Date(fixture.fixture.date).getTime();

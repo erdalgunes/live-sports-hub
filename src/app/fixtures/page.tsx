@@ -9,6 +9,7 @@ import { ViewTabs } from '@/components/view-tabs'
 import { DatePicker } from '@/components/date-picker'
 import { DateQuickNav } from '@/components/date-quick-nav'
 import { getCurrentSeason } from '@/lib/utils/season'
+import type { Fixture } from '@/types/api-football'
 
 export const revalidate = 3600 // ISR: 1 hour
 
@@ -28,14 +29,14 @@ export default async function FixturesPage({ searchParams }: Readonly<FixturesPa
   const selectedDateFormatted = format(selectedDate, DATE_FORMATS.API)
 
   // Fetch fixtures based on view type
-  let fixturesData: unknown[] = []
-  let roundFixturesData: unknown[] = []
+  let fixturesData: Fixture[] = []
+  let roundFixturesData: Fixture[] = []
   let error: string | null = null
 
   if (view === 'date') {
     try {
       const data = await getFixturesByDate(selectedDateFormatted, 39, season) // Premier League only
-      fixturesData = data.response
+      fixturesData = data.response as Fixture[]
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load fixtures'
       console.error('Error fetching fixtures:', e)
@@ -43,7 +44,7 @@ export default async function FixturesPage({ searchParams }: Readonly<FixturesPa
   } else if (view === 'round') {
     try {
       const data = await getFixturesByRound(39, season, `Regular Season - ${round}`) // Premier League only
-      roundFixturesData = data.response
+      roundFixturesData = data.response as Fixture[]
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load fixtures'
       console.error('Error fetching fixtures:', e)

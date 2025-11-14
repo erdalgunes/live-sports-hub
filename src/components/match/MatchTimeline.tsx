@@ -54,7 +54,7 @@ export function MatchTimeline({
     return (
       <div className={`match-timeline-empty ${className}`}>
         <p className="match-timeline-empty__text">No events yet</p>
-      <style jsx>{/* NOSONAR */}{`
+      <style jsx>{`
           .match-timeline-empty {
             padding: 48px 24px;
             text-align: center;
@@ -87,13 +87,11 @@ export function MatchTimeline({
                 {isHomeTeam && (
                   <div className="match-timeline__content">
                     <div className="match-timeline__player">
-                      {event.player
-                        ? `${event.player.first_name} ${event.player.last_name}`
-                        : 'Unknown Player'}
+                      {event.player?.name || 'Unknown Player'}
                     </div>
                     <div className="match-timeline__event-type">{eventLabel}</div>
-                    {event.description && (
-                      <div className="match-timeline__description">{event.description}</div>
+                    {event.detail && (
+                      <div className="match-timeline__description">{event.detail}</div>
                     )}
                   </div>
                 )}
@@ -116,13 +114,11 @@ export function MatchTimeline({
                 {!isHomeTeam && (
                   <div className="match-timeline__content">
                     <div className="match-timeline__player">
-                      {event.player
-                        ? `${event.player.first_name} ${event.player.last_name}`
-                        : 'Unknown Player'}
+                      {event.player?.name || 'Unknown Player'}
                     </div>
                     <div className="match-timeline__event-type">{eventLabel}</div>
-                    {event.description && (
-                      <div className="match-timeline__description">{event.description}</div>
+                    {event.detail && (
+                      <div className="match-timeline__description">{event.detail}</div>
                     )}
                   </div>
                 )}
@@ -132,7 +128,7 @@ export function MatchTimeline({
         })}
       </div>
 
-      <style jsx>{/* NOSONAR */}{`
+      <style jsx>{`
         .match-timeline {
           background: var(--surface);
           border-radius: 12px;

@@ -82,7 +82,8 @@ function calculateAdaptiveTTL(endpoint: string, responseData: unknown): number {
 
   // Check for live fixtures (priority 1)
   const hasLiveFixture = fixtures.some((f) => {
-    const status = f?.fixture?.status?.short || f?.status;
+    const fixture = f as { fixture?: { status?: { short?: string } }; status?: string };
+    const status = fixture?.fixture?.status?.short || fixture?.status;
     return status && LIVE_STATUSES.has(status);
   });
   if (hasLiveFixture) {
@@ -92,7 +93,8 @@ function calculateAdaptiveTTL(endpoint: string, responseData: unknown): number {
 
   // Check if all fixtures are finished (priority 2)
   const allFinished = fixtures.every((f) => {
-    const status = f?.fixture?.status?.short || f?.status;
+    const fixture = f as { fixture?: { status?: { short?: string } }; status?: string };
+    const status = fixture?.fixture?.status?.short || fixture?.status;
     return status && FINISHED_STATUSES.has(status);
   });
   if (allFinished) {
@@ -102,7 +104,8 @@ function calculateAdaptiveTTL(endpoint: string, responseData: unknown): number {
 
   // Check for postponed fixtures (priority 3)
   const hasPostponed = fixtures.some((f) => {
-    const status = f?.fixture?.status?.short || f?.status;
+    const fixture = f as { fixture?: { status?: { short?: string } }; status?: string };
+    const status = fixture?.fixture?.status?.short || fixture?.status;
     return status && POSTPONED_STATUSES.has(status);
   });
   if (hasPostponed) {
@@ -115,7 +118,8 @@ function calculateAdaptiveTTL(endpoint: string, responseData: unknown): number {
   const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 
   const hasUpcomingSoon = fixtures.some((f) => {
-    const matchDate = f?.fixture?.date || f?.date;
+    const fixture = f as { fixture?: { date?: string }; date?: string };
+    const matchDate = fixture?.fixture?.date || fixture?.date;
     if (!matchDate) return false;
 
     const matchTime = new Date(matchDate).getTime();
@@ -236,21 +240,30 @@ async function fetchFromCache(
       return null;
     }
 
+    type CacheRow = {
+      id: string;
+      expires_at: string;
+      hit_count: number;
+      response_data: unknown;
+    };
+
+    const cacheData = data as CacheRow;
+
     // Check if cache is still valid
-    if (!isCacheValid(data.expires_at)) {
+    if (!isCacheValid(cacheData.expires_at)) {
       // Cache expired, delete it
-      await supabase.from('api_football_cache').delete().eq('id', data.id);
+      await supabase.from('api_football_cache').delete().eq('id', cacheData.id);
       return null;
     }
 
     // Update hit count
-    await supabase
-      .from('api_football_cache')
-      .update({ hit_count: data.hit_count + 1 })
-      .eq('id', data.id);
+    await (supabase
+      .from('api_football_cache') as any)
+      .update({ hit_count: cacheData.hit_count + 1 })
+      .eq('id', cacheData.id);
 
     console.log(`[Cache HIT] ${endpoint} (${paramsHash})`);
-    return data.response_data;
+    return cacheData.response_data;
   } catch (error) {
     console.error('[Cache] Failed to fetch from cache:', error);
     return null;
@@ -282,8 +295,8 @@ async function storeInCache(
     };
 
     // Upsert (insert or update if exists)
-    const { error } = await supabase
-      .from('api_football_cache')
+    const { error } = await (supabase
+      .from('api_football_cache') as any)
       .upsert(cacheEntry, {
         onConflict: 'endpoint,params_hash',
       });
@@ -447,13 +460,20 @@ export async function getCacheStats(): Promise<{
       return { total: 0, expired: 0, valid: 0, totalHits: 0 };
     }
 
+    type CacheRow = {
+      expires_at: string;
+      hit_count: number;
+    };
+
+    const cacheData = data as CacheRow[];
+
     const now = new Date();
-    const expired = data.filter((entry) => new Date(entry.expires_at) <= now).length;
-    const valid = data.length - expired;
-    const totalHits = data.reduce((sum, entry) => sum + (entry.hit_count || 0), 0);
+    const expired = cacheData.filter((entry) => new Date(entry.expires_at) <= now).length;
+    const valid = cacheData.length - expired;
+    const totalHits = cacheData.reduce((sum, entry) => sum + (entry.hit_count || 0), 0);
 
     return {
-      total: data.length,
+      total: cacheData.length,
       expired,
       valid,
       totalHits,

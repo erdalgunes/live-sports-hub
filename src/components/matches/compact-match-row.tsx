@@ -1,9 +1,10 @@
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import type { Fixture } from '@/types/api-football'
 
 interface CompactMatchRowProps {
-  fixture: unknown
+  fixture: Fixture
 }
 
 export function CompactMatchRow({ fixture }: Readonly<CompactMatchRowProps>) {

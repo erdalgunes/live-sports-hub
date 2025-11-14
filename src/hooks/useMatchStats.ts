@@ -61,7 +61,7 @@ export function useMatchStats(matchId: number | null): UseMatchStatsReturn {
         setError(null);
         const statsData = await getMatchStats(matchId);
         if (isMounted) {
-          setStats(statsData);
+          setStats(statsData || { home: null, away: null });
           setLoading(false);
         }
       } catch (err) {

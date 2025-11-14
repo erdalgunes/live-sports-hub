@@ -135,7 +135,7 @@ export async function setTeamFixturesToCache(
   const expiresAt = new Date(now.getTime() + CACHE_DURATION_MS)
 
   // Type assertion to work around Supabase type inference issues
-  await supabase.from('team_fixtures_cache').upsert(
+  await (supabase.from('team_fixtures_cache') as any).upsert(
     {
       team_id: teamId,
       league_id: leagueId,

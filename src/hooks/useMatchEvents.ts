@@ -57,7 +57,7 @@ function updateEvent(
   updatedEvent: MatchEvent
 ): MatchEventDetail[] {
   return prev.map((event) =>
-    event.id === updatedEvent.id ? { ...event, ...updatedEvent } : event
+    event.id === updatedEvent.id ? { ...event, ...updatedEvent } as MatchEventDetail : event
   );
 }
 
@@ -105,7 +105,7 @@ export function useMatchEvents(matchId: number | null): UseMatchEventsReturn {
       },
       onUpdate: (payload: RealtimePostgresChangesPayload<MatchEvent>) => {
         if (!isMounted || !payload.new) return;
-        setEvents((prev) => updateEvent(prev, payload.new));
+        setEvents((prev) => updateEvent(prev, payload.new as MatchEvent));
       },
       onError: (err) => {
         if (isMounted) {

@@ -2,18 +2,19 @@ import { getLiveFixtures } from '@/lib/api/api-football'
 import { MatchList } from '@/components/matches/match-list'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { Fixture } from '@/types/api-football'
 
 export const revalidate = 60 // ISR: revalidate every 60 seconds
 
 export default async function HomePage() {
   // Server-side initial data
-  let fixtures: unknown[] = []
+  let fixtures: Fixture[] = []
   let error: string | null = null
 
   try {
     // Fetch live fixtures for Premier League
     const data = await getLiveFixtures(39)
-    fixtures = data.response
+    fixtures = data.response as Fixture[]
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to load live matches'
     console.error('Error fetching live fixtures:', e)

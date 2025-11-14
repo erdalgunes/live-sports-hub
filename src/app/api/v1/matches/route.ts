@@ -9,7 +9,7 @@ import {
 import { MatchFiltersSchema } from '@/lib/validators/matches';
 import { getMatches } from '@/services/matches';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   return withErrorHandling(async () => {
     const { searchParams } = new URL(request.url);
 

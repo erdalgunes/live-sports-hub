@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Get cache trends
+    // @ts-expect-error - Supabase generated types may not include this RPC function
     const { data, error } = await supabase.rpc('get_cache_trends', {
       hours_back: hours,
     });
@@ -31,11 +32,13 @@ export async function GET(request: NextRequest) {
       throw new Error(`Failed to get cache trends: ${error.message}`);
     }
 
+    const trends = (data as unknown[]) || []
+
     return apiSuccess(
       {
         timeRange: `${hours} hours`,
-        snapshots: data || [],
-        count: data?.length || 0,
+        snapshots: trends,
+        count: trends.length,
       },
       {
         headers: getCacheHeaders('short'), // Cache for 5 minutes

@@ -140,7 +140,7 @@ export const MatchEventSchema = z.object({
   minute: z.number().int().min(0).max(120),
   extra_minute: z.number().int().min(0).max(15).default(0),
   detail: z.string().max(255).nullable(),
-  event_data: z.record(z.any()).nullable(),
+  event_data: z.record(z.string(), z.any()).nullable(),
   created_at: z.string().datetime().optional(),
 });
 
@@ -296,7 +296,7 @@ export function validateSchema<T extends z.ZodTypeAny>(
 
   if (!result.success) {
     throw new Error(
-      `Validation failed: ${result.error.errors
+      `Validation failed: ${result.error.issues
         .map((e) => `${e.path.join('.')}: ${e.message}`)
         .join(', ')}`
     );

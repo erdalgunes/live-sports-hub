@@ -74,7 +74,7 @@ function StatRow({
       {/* Away value */}
       <div className="stat-row__value stat-row__value--away">{formatValue(awayValue)}</div>
 
-      <style jsx>{/* NOSONAR */}{`
+      <style jsx>{`
         .stat-row {
           display: grid;
           grid-template-columns: 60px 1fr 60px;
@@ -168,7 +168,7 @@ export function MatchStats({
     return (
       <div className={`match-stats-empty ${className}`}>
         <p className="match-stats-empty__text">Statistics not available yet</p>
-        <style jsx>{/* NOSONAR */}{`
+        <style jsx>{`
           .match-stats-empty {
             padding: 48px 24px;
             text-align: center;
@@ -201,8 +201,8 @@ export function MatchStats({
 
         <StatRow
           label="Shots"
-          homeValue={homeStats.total_shots ?? 0}
-          awayValue={awayStats.total_shots ?? 0}
+          homeValue={homeStats.shots ?? 0}
+          awayValue={awayStats.shots ?? 0}
         />
 
         <StatRow
@@ -225,8 +225,8 @@ export function MatchStats({
 
         <StatRow
           label="Corners"
-          homeValue={homeStats.corner_kicks ?? 0}
-          awayValue={awayStats.corner_kicks ?? 0}
+          homeValue={homeStats.corners ?? 0}
+          awayValue={awayStats.corners ?? 0}
         />
 
         <StatRow
@@ -255,14 +255,14 @@ export function MatchStats({
 
         <StatRow
           label="Saves"
-          homeValue={homeStats.goalkeeper_saves ?? 0}
-          awayValue={awayStats.goalkeeper_saves ?? 0}
+          homeValue={homeStats.saves ?? 0}
+          awayValue={awayStats.saves ?? 0}
         />
 
         <StatRow
           label="Passes"
-          homeValue={homeStats.total_passes ?? 0}
-          awayValue={awayStats.total_passes ?? 0}
+          homeValue={homeStats.passes ?? 0}
+          awayValue={awayStats.passes ?? 0}
         />
 
         <StatRow
@@ -273,7 +273,7 @@ export function MatchStats({
         />
       </div>
 
-      <style jsx>{/* NOSONAR */}{`
+      <style jsx>{`
         .match-stats {
           background: var(--surface);
           border-radius: 12px;

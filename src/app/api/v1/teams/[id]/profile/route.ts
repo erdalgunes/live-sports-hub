@@ -96,16 +96,23 @@ export async function GET(
     }
 
     // Process fixtures data
-    let recentFixtures: unknown[] = [];
-    let upcomingFixtures: unknown[] = [];
+    type FixtureItem = {
+      fixture: {
+        date: string
+        status: { short: string }
+      }
+    }
+
+    let recentFixtures: FixtureItem[] = [];
+    let upcomingFixtures: FixtureItem[] = [];
 
     if (fixturesResult.status === 'fulfilled' && fixturesResult.value) {
-      const allFixtures = fixturesResult.value;
+      const allFixtures = fixturesResult.value as FixtureItem[];
       const now = Date.now();
 
       // Separate into recent and upcoming
-      const recent: unknown[] = [];
-      const upcoming: unknown[] = [];
+      const recent: FixtureItem[] = [];
+      const upcoming: FixtureItem[] = [];
 
       for (const fixture of allFixtures) {
         const matchTime = new Date(fixture.fixture.date).getTime();

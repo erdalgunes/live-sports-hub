@@ -123,7 +123,7 @@ export function apiValidationError(
     error: {
       message,
       code: 'VALIDATION_ERROR',
-      issues: error.errors,
+      issues: error.issues,
     },
   };
 

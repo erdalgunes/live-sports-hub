@@ -4,19 +4,42 @@ import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { processFormString } from '@/lib/utils/form'
 
+export type TeamStats = {
+  win: number
+  draw: number
+  lose: number
+  played: number
+  goals: {
+    for: number
+    against: number
+  }
+}
+
+export type StandingTeam = {
+  team: { id: number; name: string; logo: string }
+  rank: number
+  form?: string
+  homeForm?: string
+  awayForm?: string
+  all?: TeamStats
+  home?: TeamStats
+  away?: TeamStats
+  [key: string]: unknown
+}
+
 interface StandingsTableProps {
-  standings: unknown[]
+  standings: StandingTeam[]
   type: 'all' | 'home' | 'away'
 }
 
 export function StandingsTable({ standings, type }: Readonly<StandingsTableProps>) {
-  const getStats = (team: { team: { id: number; name: string; logo: string }; rank: number; [key: string]: unknown }) => {
-    if (type === 'home') return team.home
-    if (type === 'away') return team.away
-    return team.all
+  const getStats = (team: StandingTeam): TeamStats => {
+    if (type === 'home') return team.home!
+    if (type === 'away') return team.away!
+    return team.all!
   }
 
-  const getForm = (team: { team: { id: number; name: string; logo: string }; rank: number; [key: string]: unknown }) => {
+  const getForm = (team: StandingTeam) => {
     if (type === 'home') {
       return processFormString(team.homeForm || '')
     }

@@ -1,10 +1,10 @@
 'use client'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { StandingsTable } from './standings-table'
+import { StandingsTable, type StandingTeam } from './standings-table'
 
 interface StandingsTabsProps {
-  standings: unknown[]
+  standings: StandingTeam[]
 }
 
 export function StandingsTabs({ standings }: Readonly<StandingsTabsProps>) {

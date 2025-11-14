@@ -51,7 +51,7 @@ function updateMatchList(
     updated[existingIndex] = {
       ...updated[existingIndex],
       ...newMatch,
-    };
+    } as MatchDetail;
     return updated;
   }
 
@@ -93,7 +93,7 @@ export function useLiveMatches(): UseLiveMatchesReturn {
     const channel = subscribeToLiveMatches({
       onUpdate: (payload: RealtimePostgresChangesPayload<Match>) => {
         if (!isMounted || !payload.new) return;
-        setMatches((prev) => updateMatchList(prev, payload.new, fetchLiveMatches));
+        setMatches((prev) => updateMatchList(prev, payload.new as Match, fetchLiveMatches));
       },
       onError: (err) => {
         if (isMounted) {

@@ -49,7 +49,7 @@ export function LiveIndicator({
         <span className="live-indicator__minute">{minute}&apos;</span>
       )}
 
-      <style jsx>{/* NOSONAR */}{`
+      <style jsx>{`
         .live-indicator {
           display: inline-flex;
           align-items: center;
@@ -150,7 +150,7 @@ export function LiveDot({
     >
       <span className={`live-dot__indicator ${animated ? 'live-dot__indicator--animated' : ''}`} />
 
-      <style jsx>{/* NOSONAR */}{`
+      <style jsx>{`
         .live-dot {
           display: inline-flex;
           align-items: center;
@@ -212,7 +212,7 @@ export function LiveBadge({
     <output className={`live-badge ${className}`} aria-live="polite">
       <LiveIndicator showText={true} minute={minute} size="small" animated={true} />
 
-      <style jsx>{/* NOSONAR */}{`
+      <style jsx>{`
         .live-badge {
           display: inline-block;
         }

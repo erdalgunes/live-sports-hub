@@ -75,7 +75,7 @@ export function useMatchLive(matchId: number | null): UseMatchLiveReturn {
             return {
               ...prev,
               ...payload.new,
-            };
+            } as MatchDetail;
           });
         }
       },
