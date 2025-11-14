@@ -43,11 +43,13 @@ export default async function HomePage() {
   )
 }
 
+const SKELETON_IDS = Array.from({ length: 5 }, (_, i) => `match-skeleton-${i + 1}`)
+
 function MatchListSkeleton() {
   return (
     <div className="space-y-4">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={`skeleton-${i}`} className="h-32 w-full" />
+      {SKELETON_IDS.map((id) => (
+        <Skeleton key={id} className="h-32 w-full" />
       ))}
     </div>
   )

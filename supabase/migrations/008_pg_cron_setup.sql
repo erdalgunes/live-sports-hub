@@ -24,8 +24,16 @@ EXCEPTION
 END $$;
 
 -- ============================================================================
--- Constants: Job Names
+-- Constants: Job Names and Extension Name
 -- ============================================================================
+
+-- Constant for pg_cron extension name to avoid duplication
+CREATE OR REPLACE FUNCTION get_pg_cron_extension_name()
+RETURNS TEXT AS $$
+BEGIN
+    RETURN 'pg_cron';
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION get_cache_job_names()
 RETURNS TEXT[] AS $$
@@ -45,10 +53,11 @@ DECLARE
     v_job_cache_snapshot CONSTANT TEXT := v_cache_jobs[2];
     v_job_cleanup_monitoring CONSTANT TEXT := v_cache_jobs[3];
     v_pg_cron_available BOOLEAN;
+    v_pg_cron_name CONSTANT TEXT := get_pg_cron_extension_name();
 BEGIN
     -- Check if pg_cron extension is available
     SELECT EXISTS (
-        SELECT 1 FROM pg_extension WHERE extname = 'pg_cron'
+        SELECT 1 FROM pg_extension WHERE extname = v_pg_cron_name
     ) INTO v_pg_cron_available;
 
     IF NOT v_pg_cron_available THEN
@@ -103,10 +112,13 @@ END $$;
 
 -- Add comment only if extension was created successfully
 DO $$
+DECLARE
+    v_pg_cron_name CONSTANT TEXT := get_pg_cron_extension_name();
 BEGIN
-    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
-        COMMENT ON EXTENSION pg_cron IS
-        'Schedules automated cache cleanup and monitoring tasks';
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = v_pg_cron_name) THEN
+        EXECUTE format('COMMENT ON EXTENSION %I IS %L',
+            v_pg_cron_name,
+            'Schedules automated cache cleanup and monitoring tasks');
     END IF;
 END $$;
 
@@ -116,24 +128,11 @@ END $$;
 
 -- Create a view to easily check scheduled jobs (only if pg_cron is available)
 DO $$
+DECLARE
+    v_pg_cron_name CONSTANT TEXT := get_pg_cron_extension_name();
 BEGIN
-    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
-        EXECUTE '
-            CREATE OR REPLACE VIEW cache_cron_jobs AS
-            SELECT
-                jobid,
-                jobname,
-                schedule,
-                command,
-                nodename,
-                nodeport,
-                database,
-                username,
-                active
-            FROM cron.job
-            WHERE jobname = ANY(get_cache_job_names())
-            ORDER BY jobname
-        ';
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = v_pg_cron_name) THEN
+        EXECUTE 'CREATE OR REPLACE VIEW cache_cron_jobs AS SELECT jobid, jobname, schedule, command, nodename, nodeport, database, username, active FROM cron.job WHERE jobname = ANY(get_cache_job_names()) ORDER BY jobname';
 
         COMMENT ON VIEW cache_cron_jobs IS
         'View of all cache-related cron jobs for easy monitoring';
@@ -147,47 +146,11 @@ END $$;
 -- ============================================================================
 
 DO $$
+DECLARE
+    v_pg_cron_name CONSTANT TEXT := get_pg_cron_extension_name();
 BEGIN
-    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
-        EXECUTE '
-            CREATE OR REPLACE FUNCTION get_cache_cron_status()
-            RETURNS TABLE(
-                job_name TEXT,
-                schedule TEXT,
-                is_active BOOLEAN,
-                last_run TIMESTAMPTZ,
-                next_run TIMESTAMPTZ,
-                run_count BIGINT
-            ) AS $func$
-            DECLARE
-                v_cache_jobs CONSTANT TEXT[] := get_cache_job_names();
-            BEGIN
-                RETURN QUERY
-                SELECT
-                    j.jobname::TEXT as job_name,
-                    j.schedule::TEXT,
-                    j.active as is_active,
-                    (
-                        SELECT MAX(start_time)
-                        FROM cron.job_run_details
-                        WHERE jobid = j.jobid
-                    ) as last_run,
-                    -- Calculate next run (simplified - assumes cron is running)
-                    CASE
-                        WHEN j.active THEN NOW() + INTERVAL ''1 hour''  -- Approximate
-                        ELSE NULL
-                    END as next_run,
-                    (
-                        SELECT COUNT(*)
-                        FROM cron.job_run_details
-                        WHERE jobid = j.jobid
-                    ) as run_count
-                FROM cron.job j
-                WHERE j.jobname = ANY(v_cache_jobs)
-                ORDER BY j.jobname;
-            END;
-            $func$ LANGUAGE plpgsql
-        ';
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = v_pg_cron_name) THEN
+        EXECUTE 'CREATE OR REPLACE FUNCTION get_cache_cron_status() RETURNS TABLE(job_name TEXT, schedule TEXT, is_active BOOLEAN, last_run TIMESTAMPTZ, next_run TIMESTAMPTZ, run_count BIGINT) AS $func$ DECLARE v_cache_jobs CONSTANT TEXT[] := get_cache_job_names(); BEGIN RETURN QUERY SELECT j.jobname::TEXT as job_name, j.schedule::TEXT, j.active as is_active, (SELECT MAX(start_time) FROM cron.job_run_details WHERE jobid = j.jobid) as last_run, CASE WHEN j.active THEN NOW() + INTERVAL ''1 hour'' ELSE NULL END as next_run, (SELECT COUNT(*) FROM cron.job_run_details WHERE jobid = j.jobid) as run_count FROM cron.job j WHERE j.jobname = ANY(v_cache_jobs) ORDER BY j.jobname; END; $func$ LANGUAGE plpgsql';
 
         COMMENT ON FUNCTION get_cache_cron_status() IS
         'Returns status and execution history of cache-related cron jobs';
