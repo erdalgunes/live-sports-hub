@@ -313,7 +313,10 @@ async function fetchFromApiFootball<T>(
   const url = new URL(endpoint, API_FOOTBALL_BASE_URL);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== null) {
-      const stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+      const stringValue =
+        typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+          ? String(value)
+          : JSON.stringify(value);
       url.searchParams.append(key, stringValue);
     }
   }

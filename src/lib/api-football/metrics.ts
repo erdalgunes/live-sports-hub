@@ -146,7 +146,7 @@ class ApiMetrics {
 export const metrics = new ApiMetrics();
 
 // Expose metrics to global scope for debugging (Node.js only)
-if (typeof globalThis.window === 'undefined' && typeof globalThis !== 'undefined') {
+if (globalThis.window === undefined && globalThis !== undefined) {
   (globalThis as { __apiMetrics?: ApiMetrics }).__apiMetrics = metrics;
 }
 

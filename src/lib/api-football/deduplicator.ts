@@ -119,7 +119,7 @@ export const deduplicator = new RequestDeduplicator();
 
 // Periodic cleanup to prevent memory leaks
 // Runs every 10 seconds in background
-if (typeof globalThis.window === 'undefined') {
+if (globalThis.window === undefined) {
   // Only run in Node.js environment (not browser)
   setInterval(() => {
     deduplicator.cleanup();
