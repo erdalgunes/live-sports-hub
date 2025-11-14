@@ -133,7 +133,7 @@ CREATE TRIGGER validate_event_before_insert
 -- ============================================================================
 -- Note: This was created in migration 004, but we'll ensure it's optimized
 
-DROP TRIGGER IF EXISTS update_score_on_goal ON match_events;
+DROP TRIGGER IF EXISTS match_goal_score_update ON match_events;
 DROP FUNCTION IF EXISTS update_match_score_on_goal();
 
 CREATE OR REPLACE FUNCTION update_match_score_on_goal()

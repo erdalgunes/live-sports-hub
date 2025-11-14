@@ -55,17 +55,17 @@ BEGIN
         RAISE NOTICE 'pg_cron extension not available - skipping cron job setup';
         RETURN;
     END IF;
+
     -- Unschedule if exists (for migration idempotency)
-    PERFORM cron.unschedule(v_job_cleanup_cache)
-    WHERE EXISTS (
-        SELECT 1 FROM cron.job WHERE jobname = v_job_cleanup_cache
-    );
+    IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = v_job_cleanup_cache) THEN
+        PERFORM cron.unschedule(v_job_cleanup_cache);
+    END IF;
 
     -- Schedule: Remove expired cache entries every 6 hours
     PERFORM cron.schedule(
         v_job_cleanup_cache,
         '0 */6 * * *',
-        $$SELECT cleanup_expired_cache()$$
+        'SELECT cleanup_expired_cache()'
     );
 
     -- ============================================================================
@@ -73,16 +73,15 @@ BEGIN
     -- ============================================================================
 
     -- Unschedule if exists
-    PERFORM cron.unschedule(v_job_cache_snapshot)
-    WHERE EXISTS (
-        SELECT 1 FROM cron.job WHERE jobname = v_job_cache_snapshot
-    );
+    IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = v_job_cache_snapshot) THEN
+        PERFORM cron.unschedule(v_job_cache_snapshot);
+    END IF;
 
     -- Schedule: Record cache performance snapshot every hour
     PERFORM cron.schedule(
         v_job_cache_snapshot,
         '0 * * * *',
-        $$SELECT record_cache_snapshot()$$
+        'SELECT record_cache_snapshot()'
     );
 
     -- ============================================================================
@@ -90,16 +89,15 @@ BEGIN
     -- ============================================================================
 
     -- Unschedule if exists
-    PERFORM cron.unschedule(v_job_cleanup_monitoring)
-    WHERE EXISTS (
-        SELECT 1 FROM cron.job WHERE jobname = v_job_cleanup_monitoring
-    );
+    IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = v_job_cleanup_monitoring) THEN
+        PERFORM cron.unschedule(v_job_cleanup_monitoring);
+    END IF;
 
     -- Schedule: Clean up monitoring data older than 30 days (daily at midnight UTC)
     PERFORM cron.schedule(
         v_job_cleanup_monitoring,
         '0 0 * * *',
-        $$SELECT cleanup_old_monitoring_data()$$
+        'SELECT cleanup_old_monitoring_data()'
     );
 END $$;
 
