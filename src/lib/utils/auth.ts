@@ -19,7 +19,7 @@ export function verifyAdminAuth(authHeader: string | null): boolean {
   }
 
   // Verify Bearer token format
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader?.startsWith('Bearer ')) {
     return false;
   }
 
