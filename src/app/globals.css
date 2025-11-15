@@ -184,6 +184,40 @@ body {
     clip: auto;
     white-space: normal;
   }
+
+  /* Live indicator animations */
+  @keyframes pulse-live {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(0.9);
+    }
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgb(220 38 38);
+    }
+    50% {
+      opacity: 0.7;
+      box-shadow: 0 0 0 4px rgb(220 38 38 / 0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 /* Respect user's motion preferences */

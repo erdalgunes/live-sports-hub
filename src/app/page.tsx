@@ -3,7 +3,6 @@ import { MatchList } from '@/components/matches/match-list'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Fixture } from '@/types/api-football'
-import { logger } from '@/lib/utils/logger'
 
 export const revalidate = 60 // ISR: revalidate every 60 seconds
 
@@ -15,10 +14,10 @@ export default async function HomePage() {
   try {
     // Fetch live fixtures for Premier League
     const data = await getLiveFixtures(39)
-    fixtures = data.response
+    fixtures = data.response as Fixture[]
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to load live matches'
-    logger.error('Failed to fetch live fixtures', { error: e, context: 'home-page' })
+    console.error('Error fetching live fixtures:', e)
   }
 
   return (
@@ -30,9 +29,11 @@ export default async function HomePage() {
 
       <Suspense fallback={<MatchListSkeleton />}>
         {error ? (
-          <div className="py-12 text-center">
-            <p className="text-destructive text-lg font-medium">Error loading live matches</p>
-            <p className="text-muted-foreground mt-2 text-sm">{error}</p>
+          <div className="text-center py-12">
+            <p className="text-lg font-medium text-destructive">
+              Error loading live matches
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">{error}</p>
           </div>
         ) : (
           <MatchList fixtures={fixtures} />
@@ -42,11 +43,13 @@ export default async function HomePage() {
   )
 }
 
+const SKELETON_IDS = Array.from({ length: 5 }, (_, i) => `match-skeleton-${i + 1}`)
+
 function MatchListSkeleton() {
   return (
     <div className="space-y-4">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-32 w-full" />
+      {SKELETON_IDS.map((id) => (
+        <Skeleton key={id} className="h-32 w-full" />
       ))}
     </div>
   )

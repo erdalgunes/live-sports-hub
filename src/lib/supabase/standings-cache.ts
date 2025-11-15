@@ -1,12 +1,13 @@
 /**
  * Supabase-based caching for team fixtures data
  * Implements stale-while-revalidate strategy for standings form indicators
+ *
+ * Note: This is a second-layer cache for *processed* fixture data.
+ * The underlying API-Football requests use the generic cache with adaptive TTL.
  */
 
 import { createClient as createServerClient } from './server'
-import { getFixturesByTeam } from '@/lib/api/api-football'
-import type { Fixture } from '@/types/api-football'
-import { logger } from '@/lib/utils/logger'
+import { getFixturesByTeam, type ApiFootballFixture } from '@/lib/api-football/services'
 
 export interface CachedFixture {
   fixtureId: number
@@ -40,13 +41,13 @@ export async function getTeamFixturesFromCache(
 ): Promise<CachedFixture[] | null> {
   const supabase = await createServerClient()
 
-  const { data, error } = (await supabase
+  const { data, error } = await supabase
     .from('team_fixtures_cache')
     .select('fixtures, expires_at')
     .eq('team_id', teamId)
     .eq('league_id', leagueId)
     .eq('season', season)
-    .single()) as { data: { fixtures: unknown; expires_at: string } | null; error: Error | null }
+    .single() as { data: { fixtures: unknown; expires_at: string } | null; error: unknown }
 
   if (error || !data) return null
 
@@ -70,14 +71,14 @@ export async function getAllTeamFixturesFromCache(
 ): Promise<Map<number, CachedFixture[]>> {
   const supabase = await createServerClient()
 
-  const { data, error } = (await supabase
+  const { data, error } = await supabase
     .from('team_fixtures_cache')
     .select('team_id, fixtures, expires_at')
     .eq('league_id', leagueId)
-    .eq('season', season)) as {
-    data: Array<{ team_id: number; fixtures: unknown; expires_at: string }> | null
-    error: Error | null
-  }
+    .eq('season', season) as {
+      data: Array<{ team_id: number; fixtures: unknown; expires_at: string }> | null
+      error: unknown
+    }
 
   if (error || !data) return new Map()
 
@@ -99,16 +100,19 @@ export async function getAllTeamFixturesFromCache(
 /**
  * Check if cache is stale (needs background refresh)
  */
-export async function isCacheStale(leagueId: number, season: number): Promise<boolean> {
+export async function isCacheStale(
+  leagueId: number,
+  season: number
+): Promise<boolean> {
   const supabase = await createServerClient()
 
-  const { data, error } = (await supabase
+  const { data, error } = await supabase
     .from('team_fixtures_cache')
     .select('expires_at')
     .eq('league_id', leagueId)
     .eq('season', season)
     .limit(1)
-    .single()) as { data: { expires_at: string } | null; error: Error | null }
+    .single() as { data: { expires_at: string } | null; error: unknown }
 
   if (error || !data) return true // No cache = stale
 
@@ -131,13 +135,12 @@ export async function setTeamFixturesToCache(
   const expiresAt = new Date(now.getTime() + CACHE_DURATION_MS)
 
   // Type assertion to work around Supabase type inference issues
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase.from('team_fixtures_cache') as any).upsert(
     {
       team_id: teamId,
       league_id: leagueId,
       season: season,
-      fixtures: fixtures,
+      fixtures: fixtures as unknown,
       cached_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
     },
@@ -165,9 +168,10 @@ export function calculateFormFromFixtures(
   })
 
   // Sort by date (newest first) and take last 5
-  const lastFive = relevantFixtures
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5)
+  const sortedFixtures = relevantFixtures.toSorted((a, b) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  )
+  const lastFive = sortedFixtures.slice(0, 5)
 
   // Calculate W/D/L for each match
   const form = lastFive.map((fixture) => {
@@ -181,7 +185,134 @@ export function calculateFormFromFixtures(
   })
 
   // Reverse to show oldest->newest (left to right)
-  return form.reverse().join('')
+  return form.toReversed().join('')
+}
+
+/**
+ * Check if team cache should be skipped
+ */
+async function shouldSkipCachedTeam(
+  teamId: number,
+  leagueId: number,
+  season: number
+): Promise<boolean> {
+  const existingCache = await getTeamFixturesFromCache(teamId, leagueId, season)
+  if (existingCache && existingCache.length > 0) {
+    console.log(`[Cache Refresh] Team ${teamId} already cached, skipping`)
+    return true
+  }
+  return false
+}
+
+/**
+ * Fetch and cache fixtures for a single team
+ */
+async function fetchAndCacheTeamFixtures(
+  teamId: number,
+  leagueId: number,
+  season: number,
+  index: number,
+  total: number
+): Promise<void> {
+  console.log(`[Cache Refresh] Fetching fixtures for team ${teamId} (${index + 1}/${total})`)
+
+  const fixtures = await getFixturesByTeam(teamId, season, leagueId, 10)
+
+  const cachedFixtures: CachedFixture[] = fixtures.map((f: ApiFootballFixture) => ({
+    fixtureId: f.fixture.id,
+    date: f.fixture.date,
+    homeTeamId: f.teams.home.id,
+    awayTeamId: f.teams.away.id,
+    homeGoals: f.goals.home ?? 0,
+    awayGoals: f.goals.away ?? 0,
+    status: f.fixture.status.short,
+  }))
+
+  await setTeamFixturesToCache(teamId, leagueId, season, cachedFixtures)
+}
+
+/**
+ * Handle rate limit error and update state
+ */
+function handleRateLimitError(
+  teamId: number,
+  consecutiveErrors: number
+): { shouldStop: boolean; newDelay: number } {
+  console.error(`[Cache Refresh] Rate limit hit for team ${teamId}, attempt ${consecutiveErrors}`)
+
+  const newDelay = Math.min(10000, 2000 * Math.pow(1.5, consecutiveErrors - 1))
+  const shouldStop = consecutiveErrors >= 3
+
+  if (shouldStop) {
+    console.error('[Cache Refresh] Too many rate limits, stopping refresh')
+  }
+
+  return { shouldStop, newDelay }
+}
+
+/**
+ * Process a single team cache refresh
+ */
+async function processTeamCacheRefresh(
+  teamId: number,
+  leagueId: number,
+  season: number,
+  index: number,
+  totalTeams: number
+): Promise<{ status: 'success' | 'failed' | 'skipped'; isRateLimit: boolean }> {
+  const shouldSkip = await shouldSkipCachedTeam(teamId, leagueId, season)
+  if (shouldSkip) {
+    return { status: 'skipped', isRateLimit: false }
+  }
+
+  try {
+    await fetchAndCacheTeamFixtures(teamId, leagueId, season, index, totalTeams)
+    return { status: 'success', isRateLimit: false }
+  } catch (error) {
+    const isRateLimit = error instanceof Error && error.message.includes('rateLimit')
+    if (!isRateLimit) {
+      console.error(`[Cache Refresh] Failed to refresh cache for team ${teamId}:`, error)
+    }
+    return { status: 'failed', isRateLimit }
+  }
+}
+
+/**
+ * Update delay after successful request
+ */
+function decreaseDelay(currentDelay: number): number {
+  return Math.max(2000, currentDelay - 200)
+}
+
+/**
+ * Process refresh result and update counters
+ */
+function handleRefreshResult(
+  result: { status: 'success' | 'failed' | 'skipped'; isRateLimit: boolean },
+  teamId: number,
+  counters: { success: number; failed: number; skipped: number; consecutiveRateLimitErrors: number },
+  delay: number
+): { shouldStop: boolean; newDelay: number } {
+  if (result.status === 'skipped') {
+    counters.skipped++
+    return { shouldStop: false, newDelay: delay }
+  }
+
+  if (result.status === 'success') {
+    counters.success++
+    counters.consecutiveRateLimitErrors = 0
+    return { shouldStop: false, newDelay: decreaseDelay(delay) }
+  }
+
+  // Handle failure
+  counters.failed++
+  if (!result.isRateLimit) {
+    return { shouldStop: false, newDelay: delay }
+  }
+
+  counters.consecutiveRateLimitErrors++
+  const { shouldStop, newDelay } = handleRateLimitError(teamId, counters.consecutiveRateLimitErrors)
+  return { shouldStop, newDelay }
 }
 
 /**
@@ -194,90 +325,23 @@ export async function refreshTeamFixturesCache(
   leagueId: number,
   season: number
 ): Promise<{ success: number; failed: number; skipped: number }> {
-  let success = 0
-  let failed = 0
-  let skipped = 0
-  let delay = 2000 // Start with 2 seconds between requests
-  let consecutiveRateLimitErrors = 0
+  const counters = { success: 0, failed: 0, skipped: 0, consecutiveRateLimitErrors: 0 }
+  let delay = 2000
 
   for (let i = 0; i < teamIds.length; i++) {
     const teamId = teamIds[i]
-    if (!teamId) continue // Skip if teamId is undefined
+    if (!teamId) continue
 
-    try {
-      // Add delay between requests to avoid rate limiting
-      if (i > 0) {
-        await new Promise((resolve) => setTimeout(resolve, delay))
-      }
-
-      // Check if this team already has fresh cache
-      const existingCache = await getTeamFixturesFromCache(teamId, leagueId, season)
-      if (existingCache && existingCache.length > 0) {
-        logger.info('Team already cached, skipping', { teamId, context: 'cache-refresh' })
-        skipped++
-        continue
-      }
-
-      logger.info('Fetching fixtures for team', {
-        teamId,
-        progress: `${i + 1}/${teamIds.length}`,
-        context: 'cache-refresh',
-      })
-
-      // Fetch last 10 fixtures for the team
-      const response = await getFixturesByTeam(teamId, season, leagueId, 10)
-      const fixtures = response.response || []
-
-      // Transform to CachedFixture format
-      const cachedFixtures: CachedFixture[] = fixtures.map((f: Fixture) => ({
-        fixtureId: f.fixture.id,
-        date: f.fixture.date,
-        homeTeamId: f.teams.home.id,
-        awayTeamId: f.teams.away.id,
-        homeGoals: f.goals.home ?? 0,
-        awayGoals: f.goals.away ?? 0,
-        status: f.fixture.status.short,
-      }))
-
-      // Save to cache
-      await setTeamFixturesToCache(teamId, leagueId, season, cachedFixtures)
-      success++
-      consecutiveRateLimitErrors = 0 // Reset on success
-
-      // Gradually reduce delay on successful requests (but never below 2s)
-      delay = Math.max(2000, delay - 200)
-    } catch (error) {
-      const isRateLimit = error instanceof Error && error.message.includes('rateLimit')
-
-      if (isRateLimit) {
-        consecutiveRateLimitErrors++
-        logger.warn('Rate limit hit for team', {
-          teamId,
-          attempt: consecutiveRateLimitErrors,
-          context: 'cache-refresh',
-        })
-
-        // Exponentially increase delay on rate limits
-        delay = Math.min(10000, delay * 1.5)
-
-        // If we hit 3 consecutive rate limits, stop and let the cache refresh later
-        if (consecutiveRateLimitErrors >= 3) {
-          logger.error('Too many rate limits, stopping refresh', { context: 'cache-refresh' })
-          failed++
-          break
-        }
-
-        failed++
-      } else {
-        logger.error('Failed to refresh cache for team', {
-          teamId,
-          error,
-          context: 'cache-refresh',
-        })
-        failed++
-      }
+    if (i > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delay))
     }
+
+    const result = await processTeamCacheRefresh(teamId, leagueId, season, i, teamIds.length)
+    const { shouldStop, newDelay } = handleRefreshResult(result, teamId, counters, delay)
+
+    delay = newDelay
+    if (shouldStop) break
   }
 
-  return { success, failed, skipped }
+  return { success: counters.success, failed: counters.failed, skipped: counters.skipped }
 }

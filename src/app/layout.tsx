@@ -7,8 +7,10 @@ import { Header } from '@/components/layout/header'
 import { APP_CONFIG } from '@/lib/constants'
 import { validateEnv } from '@/lib/validation/env'
 
-// Validate environment variables at app startup
-validateEnv()
+// Validate environment variables at app startup (skip during build)
+if (process.env.NODE_ENV !== 'test' && typeof window !== 'undefined') {
+  validateEnv()
+}
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

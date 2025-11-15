@@ -2,13 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 // Premier League typically has 38 rounds
@@ -22,7 +16,7 @@ export function RoundSelector({ defaultRound = 1 }: RoundSelectorProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const currentRound = parseInt(searchParams.get('round') || String(defaultRound))
+  const currentRound = Number.parseInt(searchParams.get('round') || String(defaultRound))
 
   const handleRoundChange = (round: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -44,7 +38,7 @@ export function RoundSelector({ defaultRound = 1 }: RoundSelectorProps) {
   }
 
   return (
-    <div className="flex items-center gap-2" role="group" aria-label="Round navigation">
+    <div className="flex items-center gap-2" aria-label="Round navigation">
       <Button
         variant="outline"
         size="icon"
