@@ -330,6 +330,7 @@ export async function refreshTeamFixturesCache(
 
   for (let i = 0; i < teamIds.length; i++) {
     const teamId = teamIds[i]
+    if (!teamId) continue
 
     if (i > 0) {
       await new Promise((resolve) => setTimeout(resolve, delay))
