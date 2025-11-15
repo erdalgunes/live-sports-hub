@@ -257,8 +257,8 @@ async function fetchFromCache(
     }
 
     // Update hit count
-    await supabase
-      .from('api_football_cache')
+    await (supabase
+      .from('api_football_cache') as any)
       .update({ hit_count: cacheData.hit_count + 1 })
       .eq('id', cacheData.id);
 
@@ -295,8 +295,8 @@ async function storeInCache(
     };
 
     // Upsert (insert or update if exists)
-    const { error } = await supabase
-      .from('api_football_cache')
+    const { error } = await (supabase
+      .from('api_football_cache') as any)
       .upsert(cacheEntry, {
         onConflict: 'endpoint,params_hash',
       });
