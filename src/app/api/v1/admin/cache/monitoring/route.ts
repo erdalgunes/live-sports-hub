@@ -6,15 +6,24 @@ import {
   withErrorHandling,
   getCacheHeaders,
 } from '@/lib/utils/api-response';
+import { verifyAdminAuth, getUnauthorizedResponse } from '@/lib/utils/auth';
 
 /**
  * GET /api/v1/admin/cache/monitoring
  * Returns cache performance trends over time
  *
+ * Requires Authorization header with Bearer token matching CRON_SECRET
+ *
  * Query params:
  * - hours: Number of hours to look back (default: 24, max: 168 = 7 days)
  */
 export async function GET(request: NextRequest) {
+  // Verify authentication
+  const authHeader = request.headers.get('authorization');
+  if (!verifyAdminAuth(authHeader)) {
+    return getUnauthorizedResponse();
+  }
+
   return withErrorHandling(async () => {
     const searchParams = request.nextUrl.searchParams;
     const hoursParam = searchParams.get('hours');
@@ -50,8 +59,16 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/v1/admin/cache/monitoring
  * Manually trigger a cache snapshot
+ *
+ * Requires Authorization header with Bearer token matching CRON_SECRET
  */
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
+  // Verify authentication
+  const authHeader = request.headers.get('authorization');
+  if (!verifyAdminAuth(authHeader)) {
+    return getUnauthorizedResponse();
+  }
+
   return withErrorHandling(async () => {
     const supabase = await createClient();
 
@@ -77,8 +94,16 @@ export async function POST(_request: NextRequest) {
 /**
  * DELETE /api/v1/admin/cache/monitoring
  * Clean up old monitoring data (>30 days)
+ *
+ * Requires Authorization header with Bearer token matching CRON_SECRET
  */
 export async function DELETE(request: NextRequest) {
+  // Verify authentication
+  const authHeader = request.headers.get('authorization');
+  if (!verifyAdminAuth(authHeader)) {
+    return getUnauthorizedResponse();
+  }
+
   return withErrorHandling(async () => {
     const supabase = await createClient();
 

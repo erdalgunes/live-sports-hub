@@ -6,12 +6,21 @@ import {
   withErrorHandling,
   getCacheHeaders,
 } from '@/lib/utils/api-response';
+import { verifyAdminAuth, getUnauthorizedResponse } from '@/lib/utils/auth';
 
 /**
  * GET /api/v1/admin/cache/cron
  * Returns status of all cache-related cron jobs
+ *
+ * Requires Authorization header with Bearer token matching CRON_SECRET
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
+  // Verify authentication
+  const authHeader = request.headers.get('authorization');
+  if (!verifyAdminAuth(authHeader)) {
+    return getUnauthorizedResponse();
+  }
+
   return withErrorHandling(async () => {
     const supabase = await createClient();
 

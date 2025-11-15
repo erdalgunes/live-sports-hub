@@ -7,12 +7,21 @@ import {
   withErrorHandling,
   getCacheHeaders,
 } from '@/lib/utils/api-response';
+import { verifyAdminAuth, getUnauthorizedResponse } from '@/lib/utils/auth';
 
 /**
  * GET /api/v1/admin/cache
  * Returns cache statistics
+ *
+ * Requires Authorization header with Bearer token matching CRON_SECRET
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
+  // Verify authentication
+  const authHeader = request.headers.get('authorization');
+  if (!verifyAdminAuth(authHeader)) {
+    return getUnauthorizedResponse();
+  }
+
   return withErrorHandling(async () => {
     const stats = await getCacheStats();
 
@@ -26,10 +35,18 @@ export async function GET(_request: NextRequest) {
  * DELETE /api/v1/admin/cache
  * Clears cache (all or specific endpoint)
  *
+ * Requires Authorization header with Bearer token matching CRON_SECRET
+ *
  * Query params:
  * - endpoint: Optional specific endpoint to clear
  */
 export async function DELETE(request: NextRequest) {
+  // Verify authentication
+  const authHeader = request.headers.get('authorization');
+  if (!verifyAdminAuth(authHeader)) {
+    return getUnauthorizedResponse();
+  }
+
   return withErrorHandling(async () => {
     const { searchParams } = new URL(request.url);
     const endpoint = searchParams.get('endpoint');
