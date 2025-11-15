@@ -28,6 +28,11 @@ export async function generateMetadata({ params }: MatchDetailPageProps): Promis
   try {
     const data = await getFixtureById(fixtureId)
     const fixture = data.response[0]
+    if (!fixture) {
+      return {
+        title: 'Match Detail - Live Sports Hub',
+      }
+    }
 
     return {
       title: `${fixture.teams.home.name} vs ${fixture.teams.away.name} - Live Sports Hub`,
