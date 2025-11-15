@@ -20,14 +20,16 @@ export function LiveIndicator({ status, elapsed }: LiveIndicatorProps) {
   return (
     <Badge
       variant="destructive"
-      className="animate-pulse gap-1"
+      className="gap-1 animate-pulse"
       aria-live="assertive"
       aria-atomic="true"
-      role="status"
+      asChild
     >
-      <Activity className="h-3 w-3" aria-hidden="true" />
-      <span className="sr-only">{getStatusText()}</span>
-      <span aria-hidden="true">{status === 'HT' ? 'HT' : `${elapsed}'`}</span>
+      <output>
+        <Activity className="h-3 w-3" aria-hidden="true" />
+        <span className="sr-only">{getStatusText()}</span>
+        <span aria-hidden="true">{status === 'HT' ? 'HT' : `${elapsed}'`}</span>
+      </output>
     </Badge>
   )
 }

@@ -7,30 +7,30 @@ interface ScoreDisplayProps {
   className?: string
 }
 
-export function ScoreDisplay({ homeScore, awayScore, status, className }: ScoreDisplayProps) {
+export function ScoreDisplay({
+  homeScore,
+  awayScore,
+  status,
+  className
+}: Readonly<ScoreDisplayProps>) {
   const showScore = homeScore !== null && awayScore !== null
 
   return (
-    <div
+    <output
       className={cn('text-2xl font-bold tabular-nums', className)}
       aria-live="polite"
       aria-atomic="true"
-      role="status"
     >
       {showScore ? (
         <>
-          <span className="sr-only">
-            Score: {homeScore} to {awayScore}
-          </span>
+          <span className="sr-only">Score: {homeScore} to {awayScore}</span>
           <span aria-hidden="true">{homeScore}</span>
-          <span className="text-muted-foreground mx-2" aria-hidden="true">
-            -
-          </span>
+          <span className="mx-2 text-muted-foreground" aria-hidden="true">-</span>
           <span aria-hidden="true">{awayScore}</span>
         </>
       ) : (
-        <span className="text-muted-foreground text-sm">{status}</span>
+        <span className="text-sm text-muted-foreground">{status}</span>
       )}
-    </div>
+    </output>
   )
 }

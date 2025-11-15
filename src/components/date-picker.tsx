@@ -8,7 +8,6 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { logger } from '@/lib/utils/logger'
 
 interface DatePickerProps {
   defaultDate?: Date
@@ -21,7 +20,9 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
   const searchParams = useSearchParams()
 
   const dateParam = searchParams.get('date')
-  const [date, setDate] = useState<Date | undefined>(dateParam ? new Date(dateParam) : defaultDate)
+  const [date, setDate] = useState<Date | undefined>(
+    dateParam ? new Date(dateParam) : defaultDate
+  )
   const [matchDays, setMatchDays] = useState<Date[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [currentMonth, setCurrentMonth] = useState<Date>(date || defaultDate)
@@ -51,11 +52,7 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
           setMatchDays(daysWithMatches)
         }
       } catch (error) {
-        logger.error('Failed to fetch match days', {
-          error,
-          month: currentMonth,
-          context: 'date-picker',
-        })
+        console.error('Error fetching match days:', error)
       }
     }
 
@@ -81,9 +78,7 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
             'w-[240px] justify-start text-left font-normal',
             !date && 'text-muted-foreground'
           )}
-          aria-label={
-            date ? `Change date. Currently selected: ${format(date, 'PPPP')}` : 'Choose date'
-          }
+          aria-label={date ? `Change date. Currently selected: ${format(date, 'PPPP')}` : 'Choose date'}
           aria-haspopup="dialog"
           aria-expanded={isOpen}
         >
@@ -91,7 +86,11 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
           {date ? format(date, 'PPP') : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start" role="dialog" aria-label="Choose date">
+      <PopoverContent
+        className="w-auto p-0"
+        align="start"
+        aria-label="Choose date"
+      >
         <style jsx global>{`
           /* Days with matches styling */
           .rdp-day_button.has-matches {
@@ -121,7 +120,7 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
           }
 
           /* Selected day with matches */
-          .rdp-day_button.has-matches[aria-selected='true']::after {
+          .rdp-day_button.has-matches[aria-selected="true"]::after {
             background-color: hsl(var(--primary-foreground));
           }
 
@@ -131,10 +130,9 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
           }
         `}</style>
         <div>
-          <div className="sr-only" role="status" aria-live="polite">
-            Use arrow keys to navigate dates. Press Enter to select. Days with matches are
-            indicated.
-          </div>
+          <output className="sr-only" aria-live="polite">
+            Use arrow keys to navigate dates. Press Enter to select. Days with matches are indicated.
+          </output>
           <Calendar
             mode="single"
             selected={date}
@@ -142,25 +140,21 @@ export function DatePicker({ defaultDate = new Date(), season }: DatePickerProps
             onMonthChange={setCurrentMonth}
             month={currentMonth}
             modifiers={{
-              hasMatches: matchDays,
+              hasMatches: matchDays
             }}
             modifiersClassNames={{
-              hasMatches: 'has-matches',
+              hasMatches: 'has-matches'
             }}
             labels={{
-              labelPrevious: () => `Go to previous month`,
-              labelNext: () => `Go to next month`,
+              labelPrevious: (month) => `Go to previous month`,
+              labelNext: (month) => `Go to next month`,
             }}
             initialFocus
           />
           {matchDays.length > 0 && (
-            <div className="px-3 pt-0 pb-3">
-              <p className="text-muted-foreground text-xs">
-                <span
-                  className="bg-primary mr-1.5 inline-block h-2 w-2 rounded-full align-middle"
-                  aria-hidden="true"
-                ></span>
-                Days with scheduled matches
+            <div className="px-3 pb-3 pt-0">
+              <p className="text-xs text-muted-foreground">
+                <span className="inline-block w-2 h-2 rounded-full bg-primary mr-1.5 align-middle" aria-hidden="true"></span> Days with scheduled matches
               </p>
             </div>
           )}

@@ -3,27 +3,43 @@
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { processFormString } from '@/lib/utils/form'
-import type { Standing } from '@/types/api-football'
 
-// Extended Standing type to support custom form fields
-interface EnhancedStanding extends Standing {
+export type TeamStats = {
+  win: number
+  draw: number
+  lose: number
+  played: number
+  goals: {
+    for: number
+    against: number
+  }
+}
+
+export type StandingTeam = {
+  team: { id: number; name: string; logo: string }
+  rank: number
+  form?: string
   homeForm?: string
   awayForm?: string
+  all?: TeamStats
+  home?: TeamStats
+  away?: TeamStats
+  [key: string]: unknown
 }
 
 interface StandingsTableProps {
-  standings: EnhancedStanding[]
+  standings: StandingTeam[]
   type: 'all' | 'home' | 'away'
 }
 
-export function StandingsTable({ standings, type }: StandingsTableProps) {
-  const getStats = (team: EnhancedStanding) => {
-    if (type === 'home') return team.home
-    if (type === 'away') return team.away
-    return team.all
+export function StandingsTable({ standings, type }: Readonly<StandingsTableProps>) {
+  const getStats = (team: StandingTeam): TeamStats => {
+    if (type === 'home') return team.home!
+    if (type === 'away') return team.away!
+    return team.all!
   }
 
-  const getForm = (team: EnhancedStanding) => {
+  const getForm = (team: StandingTeam) => {
     if (type === 'home') {
       return processFormString(team.homeForm || '')
     }
@@ -83,7 +99,11 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
 
   const getFormDescription = (form: string[]) => {
     if (form.length === 0) return 'No recent form available'
-    const results = form.map((r) => (r === 'W' ? 'Win' : r === 'D' ? 'Draw' : 'Loss'))
+    const results = form.map(r => {
+      if (r === 'W') return 'Win'
+      if (r === 'D') return 'Draw'
+      return 'Loss'
+    })
     return `Last ${form.length} matches: ${results.join(', ')}`
   }
 
@@ -92,88 +112,63 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
       <table className="w-full border-collapse">
         <caption className="sr-only">{getTableCaption()}</caption>
         <thead>
-          <tr className="bg-muted/30 border-b">
-            <th
-              scope="col"
-              className="text-muted-foreground w-10 px-3 py-3 text-center text-xs font-medium"
-            >
+          <tr className="border-b bg-muted/30">
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-10">
               <abbr title="Position">#</abbr>
             </th>
-            <th
-              scope="col"
-              className="text-muted-foreground flex-1 px-3 py-3 pl-2 text-left text-xs font-medium"
-            >
+            <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-muted-foreground flex-1 pl-2">
               Team
             </th>
-            <th
-              scope="col"
-              className="text-muted-foreground w-10 px-3 py-3 text-center text-xs font-medium"
-            >
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-10">
               <abbr title="Played">P</abbr>
             </th>
-            <th
-              scope="col"
-              className="text-muted-foreground w-10 px-3 py-3 text-center text-xs font-medium"
-            >
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-10">
               <abbr title="Won">W</abbr>
             </th>
-            <th
-              scope="col"
-              className="text-muted-foreground w-10 px-3 py-3 text-center text-xs font-medium"
-            >
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-10">
               <abbr title="Drawn">D</abbr>
             </th>
-            <th
-              scope="col"
-              className="text-muted-foreground w-10 px-3 py-3 text-center text-xs font-medium"
-            >
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-10">
               <abbr title="Lost">L</abbr>
             </th>
-            <th
-              scope="col"
-              className="text-muted-foreground hidden w-16 px-3 py-3 text-center text-xs font-medium sm:table-cell"
-            >
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-16 hidden sm:table-cell">
               <abbr title="Goal Difference">DIFF</abbr>
             </th>
-            <th
-              scope="col"
-              className="text-muted-foreground hidden w-16 px-3 py-3 text-center text-xs font-medium md:table-cell"
-            >
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-16 hidden md:table-cell">
               Goals
             </th>
-            <th
-              scope="col"
-              className="text-muted-foreground hidden w-32 px-3 py-3 text-center text-xs font-medium lg:table-cell"
-            >
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-32 hidden lg:table-cell">
               Last 5
             </th>
-            <th
-              scope="col"
-              className="text-muted-foreground w-12 px-3 py-3 text-center text-xs font-medium"
-            >
+            <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-muted-foreground w-12">
               <abbr title="Points">PTS</abbr>
             </th>
           </tr>
         </thead>
         <tbody>
-          {sortedStandings.map((team: EnhancedStanding, index: number) => {
+          {sortedStandings.map((team: { team: { id: number; name: string; logo: string }; rank: number; [key: string]: unknown }, index: number) => {
             const stats = getStats(team)
             const form = getForm(team)
             const currentPosition = index + 1
             const overallRank = team.rank
 
             return (
-              <tr key={team.team.id} className="hover:bg-muted/50 group border-b transition-colors">
+              <tr
+                key={team.team.id}
+                className="border-b hover:bg-muted/50 transition-colors group"
+              >
                 {/* Position */}
                 <td className="px-3 py-3 text-center">
                   <div
                     className={cn(
-                      'mx-auto flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold',
-                      getQualificationColor(overallRank) ? 'text-white' : 'text-foreground',
-                      getQualificationColor(overallRank)
+                      'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mx-auto',
+                      getQualificationColor(overallRank) || 'text-foreground',
+                      getQualificationColor(overallRank) && 'text-white'
                     )}
-                    title={type !== 'all' ? `Overall position: ${overallRank}` : undefined}
-                    aria-label={`Position ${currentPosition}${type !== 'all' ? `, overall position ${overallRank}` : ''}`}
+                    title={type === 'all' ? undefined : `Overall position: ${overallRank}`}
+                    aria-label={type === 'all'
+                      ? `Position ${currentPosition}`
+                      : `Position ${currentPosition}, overall position ${overallRank}`}
                   >
                     {currentPosition}
                   </div>
@@ -181,7 +176,7 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
 
                 {/* Team Name */}
                 <th scope="row" className="px-3 py-3 text-left">
-                  <div className="flex min-w-0 items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     <Image
                       src={team.team.logo}
                       alt=""
@@ -190,7 +185,7 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
                       className="flex-shrink-0"
                       aria-hidden="true"
                     />
-                    <span className="truncate font-medium">{team.team.name}</span>
+                    <span className="font-medium truncate">{team.team.name}</span>
                   </div>
                 </th>
 
@@ -201,50 +196,51 @@ export function StandingsTable({ standings, type }: StandingsTableProps) {
                 <td className="px-3 py-3 text-center text-sm">{stats.lose}</td>
 
                 {/* Goal Difference */}
-                <td className="hidden px-3 py-3 text-center text-sm font-medium sm:table-cell">
+                <td className="px-3 py-3 text-center text-sm font-medium hidden sm:table-cell">
                   {(() => {
                     const diff = stats.goals.for - stats.goals.against
-                    return `${diff > 0 ? '+' : ''}${diff}`
+                    return diff > 0 ? `+${diff}` : String(diff)
                   })()}
                 </td>
 
                 {/* Goals For:Against */}
-                <td className="hidden px-3 py-3 text-center text-sm md:table-cell">
-                  <span
-                    aria-label={`${stats.goals.for} goals scored, ${stats.goals.against} goals conceded`}
-                  >
+                <td className="px-3 py-3 text-center text-sm hidden md:table-cell">
+                  <span aria-label={`${stats.goals.for} goals scored, ${stats.goals.against} goals conceded`}>
                     {stats.goals.for}:{stats.goals.against}
                   </span>
                 </td>
 
                 {/* Form (Last 5) */}
-                <td className="hidden px-3 py-3 lg:table-cell">
-                  <div
+                <td className="px-3 py-3 hidden lg:table-cell">
+                  <ul
                     className="flex items-center justify-center gap-1"
-                    role="list"
                     aria-label={getFormDescription(form)}
                   >
                     {form.map((result: string, idx: number) => {
                       const isOldest = idx === 0
                       const isNewest = idx === form.length - 1
+                      const getResultTitle = () => {
+                        if (result === 'W') return 'Win'
+                        if (result === 'D') return 'Draw'
+                        return 'Loss'
+                      }
                       return (
-                        <div
-                          key={idx}
-                          role="listitem"
+                        <li
+                          key={`${team.team.id}-form-${idx}`}
                           className={cn(
-                            'flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white transition-all',
+                            'w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white transition-all',
                             getFormColor(result),
                             isOldest && 'rounded-l',
                             isNewest && 'rounded-r'
                           )}
-                          title={result === 'W' ? 'Win' : result === 'D' ? 'Draw' : 'Loss'}
-                          aria-label={result === 'W' ? 'Win' : result === 'D' ? 'Draw' : 'Loss'}
+                          title={getResultTitle()}
+                          aria-label={getResultTitle()}
                         >
                           {result}
-                        </div>
+                        </li>
                       )
                     })}
-                  </div>
+                  </ul>
                 </td>
 
                 {/* Points */}
