@@ -64,7 +64,7 @@ export default async function FixturesPage({ searchParams }: Readonly<FixturesPa
       </div>
 
       <Tabs defaultValue={view} className="w-full">
-        <ViewTabs defaultValue={view} />
+        <ViewTabs />
 
         <TabsContent value="date" className="space-y-4">
           <div className="flex flex-col items-center gap-4 mb-6">
