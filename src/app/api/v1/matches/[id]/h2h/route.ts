@@ -5,6 +5,7 @@ import {
   validateMatchIdParams,
   withErrorHandling,
   getCacheHeaders,
+  ApiError,
 } from '@/lib/utils/api-response';
 import { MatchIdParamSchema } from '@/lib/validators/matches';
 import { getMatchById, getH2HStats, getRecentH2HMatches } from '@/services/matches';
@@ -19,7 +20,7 @@ export async function GET(
     // Get match details to find the teams
     const match = await getMatchById(matchId);
     if (!match) {
-      throw new Error("Resource not found");
+      throw new ApiError('Match not found', 404, 'NOT_FOUND');
     }
 
     // Fetch H2H statistics

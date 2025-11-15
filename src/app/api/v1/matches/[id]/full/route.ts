@@ -10,6 +10,7 @@ import {
   apiSuccess,
   withErrorHandling,
   getCacheHeaders,
+  ApiError,
 } from '@/lib/utils/api-response';
 
 type CacheType = 'live' | 'short' | 'medium' | 'long';
@@ -95,7 +96,7 @@ export async function GET(
     const fixtureId = Number.parseInt(id, 10);
 
     if (Number.isNaN(fixtureId)) {
-      throw new TypeError('Invalid match ID');
+      throw new ApiError('Invalid match ID', 400, 'INVALID_ID');
     }
 
     // Fetch all data in parallel using Promise.allSettled
@@ -110,7 +111,7 @@ export async function GET(
 
     // Core resource (fixture) is required
     if (fixtureResult.status === 'rejected' || !fixtureResult.value) {
-      throw new Error('Match not found');
+      throw new ApiError('Match not found', 404, 'NOT_FOUND');
     }
 
     const fixture = fixtureResult.value;

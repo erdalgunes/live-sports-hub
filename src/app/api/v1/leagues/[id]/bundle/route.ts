@@ -8,6 +8,7 @@ import {
   apiSuccess,
   withErrorHandling,
   getCacheHeaders,
+  ApiError,
 } from '@/lib/utils/api-response';
 import { getCurrentSeason } from '@/lib/utils/season';
 
@@ -45,7 +46,7 @@ export async function GET(
     const leagueId = Number.parseInt(id, 10);
 
     if (Number.isNaN(leagueId)) {
-      throw new TypeError('Invalid league ID');
+      throw new ApiError('Invalid league ID', 400, 'INVALID_ID');
     }
 
     // Parse query parameters
@@ -55,13 +56,18 @@ export async function GET(
       10
     );
     const upcomingLimit = Math.min(
-      Number.parseInt(searchParams.get('upcomingLimit') || '10'),
+      Number.parseInt(searchParams.get('upcomingLimit') || '10', 10),
       20
     );
     const recentLimit = Math.min(
-      Number.parseInt(searchParams.get('recentLimit') || '10'),
+      Number.parseInt(searchParams.get('recentLimit') || '10', 10),
       20
     );
+
+    // Validate parsed values
+    if (Number.isNaN(season)) {
+      throw new ApiError('Invalid season parameter', 400, 'INVALID_SEASON');
+    }
 
     // Fetch all data in parallel
     const [standingsResult, allFixturesResult] = await Promise.allSettled([
@@ -71,7 +77,7 @@ export async function GET(
 
     // Core resource (standings) is required
     if (standingsResult.status === 'rejected' || !standingsResult.value) {
-      throw new Error('League standings not found');
+      throw new ApiError('League standings not found', 404, 'NOT_FOUND');
     }
 
     const standingsData = standingsResult.value;
@@ -109,17 +115,17 @@ export async function GET(
         }
       }
 
-      // Sort and limit
-      upcomingFixtures = upcoming
-        .toSorted(
+      // Sort and limit (Node 18 compatible)
+      upcomingFixtures = [...upcoming]
+        .sort(
           (a, b) =>
             new Date(a.fixture.date).getTime() -
             new Date(b.fixture.date).getTime()
         )
         .slice(0, upcomingLimit);
 
-      recentResults = recent
-        .toSorted(
+      recentResults = [...recent]
+        .sort(
           (a, b) =>
             new Date(b.fixture.date).getTime() -
             new Date(a.fixture.date).getTime()

@@ -5,6 +5,7 @@ import {
   validateMatchIdParams,
   withErrorHandling,
   getCacheHeaders,
+  ApiError,
 } from '@/lib/utils/api-response';
 import { MatchIdParamSchema } from '@/lib/validators/matches';
 import { getMatchEvents, getMatchById } from '@/services/matches';
@@ -19,7 +20,7 @@ export async function GET(
     // Check if match exists
     const match = await getMatchById(matchId);
     if (!match) {
-      throw new Error('Match not found');
+      throw new ApiError('Match not found', 404, 'NOT_FOUND');
     }
 
     // Fetch match events
